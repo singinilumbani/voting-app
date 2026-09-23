@@ -56,7 +56,7 @@ router.post('/candidates', upload.single('photo'), async (req, res) => {
   }
 
   try {
-    const photoUrl = `/uploads/${req.file.filename}`;
+    const photoUrl = req.file.path;
 
     const result = await pool.query(
       `INSERT INTO candidates (name, photo_url, bio, position_id)

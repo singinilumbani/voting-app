@@ -13,7 +13,7 @@ app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use('/uploads', express.static('uploads'));
+
 
 app.get('/', (req, res) => {
   res.json({ message: 'Voting API is alive' });
@@ -32,4 +32,23 @@ app.use('/api/admin', adminRouter);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+app.get('/setup-db-once', async (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const pool = require('./src/db');
+  try {
+    const sqlPath = path.join(__dirname, 'src', 'sql', 'schema.sql');
+    const sql = fs.readFileSync(sqlPath, 'utf8');
+    await pool.query(sql);
+
+    const check = await pool.query(`
+      SELECT table_name FROM information_schema.tables 
+      WHERE table_schema = 'public'
+    `);
+    res.json({ message: 'Schema executed', tables: check.rows.map(r => r.table_name) });
+  } catch (err) {
+    res.status(500).json({ error: err.message, detail: err.detail || null });
+  }
 });
