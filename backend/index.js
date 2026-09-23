@@ -52,3 +52,18 @@ app.get('/setup-db-once', async (req, res) => {
     res.status(500).json({ error: err.message, detail: err.detail || null });
   }
 });
+
+app.get('/create-admin-once', async (req, res) => {
+  const bcrypt = require('bcrypt');
+  const pool = require('./src/db');
+  try {
+    const hashedPassword = await bcrypt.hash('yourRealPassword', 10);
+    const result = await pool.query(
+      'INSERT INTO admins (email, password) VALUES ($1, $2) RETURNING id, email',
+      ['admin@example.com', hashedPassword]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
