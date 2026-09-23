@@ -1,8 +1,8 @@
-import { getPositions } from '@/lib/api';
+import { getPositions, Position } from '@/lib/api';
 import VotingSection from '@/components/VotingSection';
 
 export default async function Home() {
-  let positions;
+  let positions: Position[];
   let loadError = false;
 
   try {

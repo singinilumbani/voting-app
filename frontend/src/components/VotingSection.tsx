@@ -70,7 +70,7 @@ export default function VotingSection({ positions }: { positions: Position[] }) 
                     className="border border-[#DADCE0] rounded-xl p-4 text-center flex-shrink-0 w-40 sm:w-48 snap-start"
                   >
                     <img
-                      src={`${process.env.NEXT_PUBLIC_API_URL}${candidate.photo_url}`}
+                      src={candidate.photo_url}
                       alt={candidate.name}
                       className="w-full aspect-square object-cover rounded-lg mb-3"
                     />
