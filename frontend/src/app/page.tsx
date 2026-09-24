@@ -13,18 +13,12 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-10 sm:py-14">
+    <main className="min-h-screen px-4 py-10">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="w-3 h-3 rounded-full bg-[#4285F4]" />
-          <span className="w-3 h-3 rounded-full bg-[#EA4335]" />
-          <span className="w-3 h-3 rounded-full bg-[#FBBC05]" />
-          <span className="w-3 h-3 rounded-full bg-[#34A853]" />
-        </div>
-        <h1 className="text-2xl font-medium text-[#202124] mb-8">Vote Now</h1>
+        <h1 className="text-2xl font-medium text-[#10253A] mb-8">Vote Now</h1>
 
         {loadError && (
-          <p className="text-[#D93025] text-sm mb-6">
+          <p className="text-red-600 text-sm mb-6">
             Unable to load candidates right now. Please refresh or try again shortly.
           </p>
         )}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/Header";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -9,7 +10,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Vote Now",
+  title: "NACSO Vote",
   description: "Cast your vote",
 };
 
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={roboto.variable}>
+        <Header />
         {children}
       </body>
     </html>
