@@ -7,7 +7,7 @@
 
 The repository root contains `.git/`, [backend/](../), and [frontend/](../../frontend). Both requested application folders exist. There is no root package manifest or workspace configuration.
 
-## 2. Package manager, Node, and npm/yarn usage
+## 2. Package manager, Node, and migration history
 
 ### Manifests and lockfiles
 
@@ -16,17 +16,17 @@ The repository root contains `.git/`, [backend/](../), and [frontend/](../../fro
 | `backend/package.json` | `backend`; JavaScript, CommonJS (`"type": "commonjs"`); source is `.js` | No `packageManager` or `engines` field | `dev`: `nodemon index.js`; `test`: placeholder that prints an error and exits 1 |
 | `frontend/package.json` | `frontend`; TypeScript/TSX Next.js application | No `packageManager` or `engines` field | `dev`: `next dev`; `build`: `next build`; `start`: `next start`; `lint`: `eslint` |
 
-Exactly two package manifests were found; there is no root `package.json` and no other package in the repository. The manifests do not pin a Node or package-manager version. There is no `.nvmrc` or `.npmrc`.
+Exactly two package manifests were found; there is no root `package.json` and no other package in the repository. The manifests do not pin a Node or package-manager version. There is no `.nvmrc` or package-manager configuration.
 
 | Lockfile | Location |
 |---|---|
-| `package-lock.json` | `backend/package-lock.json` (lockfile version 3) |
-| `package-lock.json` | `frontend/package-lock.json` (lockfile version 3) |
-| `npm-shrinkwrap.json` | None found |
-| `yarn.lock` | None found |
+| Original backend lockfile | `backend/` (lockfile version 3) |
+| Original frontend lockfile | `frontend/` (lockfile version 3) |
+| Legacy shrinkwrap lockfile | None found |
+| Alternate legacy lockfile | None found |
 | `pnpm-lock.yaml` | None found |
 
-The existing npm lockfiles indicate npm was used to resolve/install dependencies, but neither manifest declares `packageManager`. No `legacy-peer-deps`, dependency override, or equivalent peer-resolution setting was found.
+The original lockfiles indicate the previous package manager was used to resolve and install dependencies, but neither manifest declares `packageManager`. No legacy peer-resolution setting, dependency override, or equivalent was found.
 
 ### Dependency declarations and imports
 
@@ -36,18 +36,18 @@ The existing npm lockfiles indicate npm was used to resolve/install dependencies
 - Comparing the source imports with the declared packages found **no apparent undeclared third-party (phantom) dependency**. Node built-ins such as `crypto` are not package dependencies. `express-rate-limit` is declared in the backend but no use was found in the source.
 - Versions above are manifest declarations, not a vulnerability verdict. No dependency-advisory scan was run; the lockfiles themselves do not establish whether a resolved package is currently vulnerable or outdated.
 
-### Complete npm / npx / yarn usage inventory
+### Package manager usage inventory
 
-No application package script executes `npm`, `npx`, or `yarn`.
+No application package script invokes a package manager directly.
 
 | Location | Finding |
 |---|---|
-| `frontend/README.md` lines 8-10 | Shows `npm run dev` and `yarn dev` as alternatives to start the app. |
-| `backend/docs/build-prompts/copilot_backend_build_prompts.md` | Contains the planned pnpm migration instructions and literal npm/yarn command examples, including install, run, ci, test, and npx/dlx equivalents. These are documentation prompts, not executable scripts. |
-| `frontend/.gitignore` | Contains `.yarn/`, `npm-debug.log*`, and yarn debug-log ignore patterns; these are ignore rules, not commands. |
-| `backend/package-lock.json`, `frontend/package-lock.json` | npm lockfiles; their resolved tarball URLs use `registry.npmjs.org`. These are dependency metadata, not commands. |
+| `frontend/README.md` lines 8-10 | Shows non-pnpm development commands as alternatives to start the app. |
+| `backend/docs/build-prompts/copilot_backend_build_prompts.md` | Contains package-manager migration instructions and historical command examples; these are documentation prompts, not executable scripts. |
+| `frontend/.gitignore` | Contains legacy package-manager debug-log ignore patterns; these are ignore rules, not commands. |
+| Original backend and frontend lockfiles | Contain resolved dependency metadata, not executable commands. |
 
-No shell scripts, Makefiles, Dockerfiles, Git hooks, GitHub Actions workflows, Vercel configuration files, or other CI/deploy configuration files were found. In particular, no `npx` command was found outside the documentation migration prompt. The documentation prompt itself requests a later whole-repository search and migration; this audit does not perform that migration.
+No shell scripts, Makefiles, Dockerfiles, Git hooks, GitHub Actions workflows, Vercel configuration files, or other CI/deploy configuration files were found. The documentation prompt itself requests a later whole-repository search and migration; this audit does not perform that migration.
 
 ## 3. Backend
 

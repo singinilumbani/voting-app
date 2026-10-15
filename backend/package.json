@@ -1,16 +1,28 @@
 {
-  "name": "backend",
+  "name": "voting-app-backend",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "main": "index.js",
   "scripts": {
+    "preinstall": "node scripts/require-pnpm.mjs",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev:worker": "wrangler dev --config wrangler.jsonc",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests",
+    "format": "prettier --write \"**/*.{ts,tsx}\" \"*.{json,jsonc,mjs}\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "packageManager": "pnpm@12.4.1",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=12"
+  },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cloudinary": "^1.41.3",
@@ -26,6 +38,15 @@
     "pg": "^8.23.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^22.20.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.2",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.151.0"
   }
 }

@@ -10,17 +10,17 @@
 - Backend entry point, routes, auth/upload middleware, DB connection, SQL schema, admin bootstrap script, and ignore rules.
 - Frontend manifest, app-router pages, components, API client, styling, TypeScript/Next/PostCSS/ESLint config, README, and ignore rules.
 - Project specification and build prompts, including the specification's data model, deployment plan, voter flows, security rules, defaults, and open items.
-- Search results for npm/npx/yarn, package manager configuration, URLs, package imports, deployment/CI files, and environment-file tracking. Environment variable names were inspected without printing values.
+- Search results for package-manager commands/configuration, URLs, package imports, deployment/CI files, and environment-file tracking. Environment variable names were inspected without printing values.
 
 ## Key findings
 
 - `backend/` and `frontend/` exist; there is no root package manifest/workspace.
-- Two npm lockfiles and two package manifests exist; no pnpm lockfile, packageManager/engines declaration, `.npmrc`, or `.nvmrc` was found.
+- Two legacy lockfiles and two package manifests exist; no pnpm lockfile, packageManager/engines declaration, package-manager config, or `.nvmrc` was found.
 - Backend is Express 5/CommonJS JavaScript with PostgreSQL via `pg` and handwritten SQL. Frontend is Next.js 16.3.5 App Router, React 19.2.8, and strict TypeScript.
 - The existing `votes` schema records a browser voter token, candidate choice, and timestamp together. This directly conflicts with the specification's database-level ballot secrecy model.
 - The current data model and admin API have no tenant or polling-station scoping. The voter cookie/login model is not the specified host-approved Closed Vote workflow.
 - No test suite, CI workflow, deployment config, or test framework was found. The backend test script is a failing placeholder.
-- npm/yarn appears in a frontend README command example, a backend build-prompt document, ignore patterns, and the npm lockfiles. No npm/npx/yarn command appears in package scripts.
+- Legacy package-manager references appear in a frontend README command example, a backend build-prompt document, ignore patterns, and the original lockfiles. No package-manager command appears in package scripts.
 - `backend/.env.local` exists locally but is ignored and untracked. Its values were not copied into the audit. The backend's default dotenv configuration does not select `.env.local`.
 - No dependency advisory scan or hosted deployment settings could be verified under the read-only task constraints. The Vercel branch/build settings need dashboard inspection.
 
