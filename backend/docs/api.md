@@ -2,6 +2,16 @@
 
 This reference describes the existing legacy API. It is not the future multi-tenant beta API. No endpoints were changed as part of the tooling migration.
 
+## TypeScript skeleton endpoint
+
+### `GET /api/v1/health`
+
+- **Auth:** None.
+- **Request:** No body.
+- **Response:** `200 { "status": "ok", "env": "development|test|staging|production", "time": "<UTC ISO 8601 timestamp>" }`.
+- **Errors:** `500 { "error": { "key": "errors.internal", "requestId": string } }`.
+- **Headers:** Responses include `X-Request-Id`. Other errors use `{ "error": { "key": string, "params"?: object, "requestId": string } }`.
+
 All responses are JSON except candidate creation, which uses `multipart/form-data`. Error responses use the `error` key.
 
 ## Public endpoints

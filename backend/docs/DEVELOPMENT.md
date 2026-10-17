@@ -14,15 +14,26 @@ The preinstall guard rejects installs initiated by other package managers.
 
 ## Run
 
-Start the existing Express application with automatic restart:
+Start the new TypeScript Express skeleton on port 8787 with automatic restart:
 
 ```sh
 pnpm dev
 ```
 
-The server listens on port 5000 by default. Its database and service integrations require the environment variables used by the existing application; do not commit secrets.
+The existing JavaScript application remains available separately on port 5000:
 
-`pnpm dev:worker` is wired to Wrangler and `wrangler.jsonc`, but the Worker entrypoint (`src/worker.ts`) is intentionally deferred to the runtime spike. The existing Node Express server is not a Worker fetch handler, so this command is not a runnable backend Worker yet.
+```sh
+pnpm dev:legacy
+```
+
+Run the same TypeScript application in Wrangler's local Workers runtime with:
+
+```sh
+cp .dev.vars.example .dev.vars
+pnpm dev:worker
+```
+
+The Worker entrypoint uses Node.js HTTP compatibility through Cloudflare's `httpServerHandler`. No Cloudflare login or deployment is needed for local development. Do not commit `.dev.vars` or other secrets.
 
 ## Build and quality checks
 
@@ -42,3 +53,9 @@ pnpm format
 ```
 
 The format command does not reformat the existing JavaScript application.
+
+Regenerate Cloudflare Worker runtime and binding declarations after changing `wrangler.toml`:
+
+```sh
+pnpm types:worker
+```
