@@ -1,0 +1,14 @@
+[
+  { "input": "TK-K7QM-2XD9-4HNP", "expected": { "ok": true, "normalized": "K7QM2XD94HNP" } },
+  { "input": "k7qm 2xd9 4hnp", "expected": { "ok": true, "normalized": "K7QM2XD94HNP" } },
+  { "input": "TK-K7QM-2XD9-4HNP", "expected": { "ok": true, "normalized": "K7QM2XD94HNP" } },
+  { "input": "TK-OILM-2XD9-4HNP", "expected": { "ok": true, "normalized": "011M2XD94HNP" } },
+  { "input": "K7QM2XD94HN", "expected": { "ok": false, "reason": "INVALID_LENGTH" } },
+  { "input": "K7QM2XD94HNPX", "expected": { "ok": false, "reason": "INVALID_LENGTH" } },
+  { "input": "K7QM2XD94HN!", "expected": { "ok": false, "reason": "INVALID_CHARACTERS" } },
+  { "input": "K7QM2XD94HNI", "expected": { "ok": true, "normalized": "K7QM2XD94HN1" } },
+  { "input": "K7QM2XD94HNL", "expected": { "ok": true, "normalized": "K7QM2XD94HN1" } },
+  { "input": "K7QM2XD94HNO", "expected": { "ok": true, "normalized": "K7QM2XD94HN0" } },
+  { "input": "TKK7QM2XD94H", "expected": { "ok": true, "normalized": "TKK7QM2XD94H" } },
+  { "input": "TKK7QM2XD94HNP", "expected": { "ok": true, "normalized": "K7QM2XD94HNP" } }
+]

@@ -1,0 +1,140 @@
+[
+  {
+    "input": "0991234567",
+    "expected": {
+      "ok": true,
+      "canonical": "265991234567",
+      "display": "0991 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "0991 234 567",
+    "expected": {
+      "ok": true,
+      "canonical": "265991234567",
+      "display": "0991 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "099-123-4567",
+    "expected": {
+      "ok": true,
+      "canonical": "265991234567",
+      "display": "0991 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "+265 99 123 4567",
+    "expected": {
+      "ok": true,
+      "canonical": "265991234567",
+      "display": "0991 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "00265991234567",
+    "expected": {
+      "ok": true,
+      "canonical": "265991234567",
+      "display": "0991 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "265991234567",
+    "expected": {
+      "ok": true,
+      "canonical": "265991234567",
+      "display": "0991 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "991234567",
+    "expected": {
+      "ok": true,
+      "canonical": "265991234567",
+      "display": "0991 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "+2650991234567",
+    "expected": {
+      "ok": true,
+      "canonical": "265991234567",
+      "display": "0991 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "tel: (0991) 234.567",
+    "expected": {
+      "ok": true,
+      "canonical": "265991234567",
+      "display": "0991 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "09​91 234 567",
+    "expected": {
+      "ok": true,
+      "canonical": "265991234567",
+      "display": "0991 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "+1 202 555 0123",
+    "expected": {
+      "ok": true,
+      "canonical": "12025550123",
+      "display": "+12025550123",
+      "isInternational": true
+    }
+  },
+  {
+    "input": "+991234567",
+    "expected": {
+      "ok": true,
+      "canonical": "991234567",
+      "display": "+991234567",
+      "isInternational": true
+    }
+  },
+  {
+    "input": "0012025550123",
+    "expected": {
+      "ok": true,
+      "canonical": "12025550123",
+      "display": "+12025550123",
+      "isInternational": true
+    }
+  },
+  { "input": "099123456", "expected": { "ok": false, "reason": "TOO_SHORT" } },
+  { "input": "099123456789", "expected": { "ok": false, "reason": "TOO_LONG" } },
+  {
+    "input": "0881234567",
+    "expected": {
+      "ok": true,
+      "canonical": "265881234567",
+      "display": "0881 234 567",
+      "isInternational": false
+    }
+  },
+  { "input": "0123456789", "expected": { "ok": false, "reason": "NOT_MOBILE" } },
+  { "input": "9.91E+11", "expected": { "ok": false, "reason": "SPREADSHEET_DAMAGED" } },
+  { "input": "1E10", "expected": { "ok": false, "reason": "SPREADSHEET_DAMAGED" } },
+  { "input": "", "expected": { "ok": false, "reason": "EMPTY" } },
+  { "input": "   ", "expected": { "ok": false, "reason": "EMPTY" } },
+  { "input": "letters only", "expected": { "ok": false, "reason": "INVALID_CHARACTERS" } },
+  { "input": "099ABC4567", "expected": { "ok": false, "reason": "INVALID_CHARACTERS" } },
+  { "input": "+265265991234567", "expected": { "ok": false, "reason": "NOT_MOBILE" } },
+  { "input": "1234567890123456", "expected": { "ok": false, "reason": "TOO_LONG" } },
+  { "input": "+1 123", "expected": { "ok": false, "reason": "TOO_SHORT" } }
+]
