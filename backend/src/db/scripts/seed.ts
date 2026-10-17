@@ -6,9 +6,12 @@ import { pollingStations } from '../schema/polling-stations.js';
 import { users } from '../schema/users.js';
 
 const seedEnvironmentSchema = z.object({
-  DEMO_HOST_PASSWORD_HASH: z.string().min(20),
   DEMO_HOST_EMAIL: z.string().email().default('demo-host@example.test')
 });
+
+// Syntactically valid placeholder only; M5 replaces it with a real PBKDF2 hash.
+const DEMO_HOST_PASSWORD_HASH =
+  'pbkdf2-sha256$600000$MDEyMzQ1Njc4OWFiY2RlZg$MDEyMzQ1Njc4OWFiY2RlZg';
 
 function createPublicId(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(10)), (byte) =>
@@ -17,7 +20,7 @@ function createPublicId(): string {
 }
 
 async function main(): Promise<void> {
-  const { DEMO_HOST_EMAIL, DEMO_HOST_PASSWORD_HASH } = seedEnvironmentSchema.parse(process.env);
+  const { DEMO_HOST_EMAIL } = seedEnvironmentSchema.parse(process.env);
   const config = loadConfig(process.env);
   if (!config.databaseUrl) {
     throw new Error('DATABASE_URL is required to seed the database');

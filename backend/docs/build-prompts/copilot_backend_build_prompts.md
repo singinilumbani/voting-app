@@ -377,7 +377,7 @@ Layout: src/shared/phone/, src/shared/token/, src/shared/constants.ts, src/share
 1. Phone normalizer (normalizePhone):
    - Clean: remove spaces, dashes, dots, brackets, invisible characters, a leading "tel:", and a leading "+".
    - Rewrite to canonical digits 265 + 9-digit national number: "0991234567", "0991 234 567", "099-123-4567", "+265 99 123 4567", "00265991234567", "265991234567", "991234567" (a leading zero dropped by a spreadsheet) and "+2650991234567" (extra zero after the country code) all become "265991234567".
-   - Validate: national number is 9 digits starting with 8 or 9 (mobile). This rule is configuration (an exported constant) because it is an assumption.
+   - Validate: national number is 9 digits starting with 8 or 9 (mobile). This confirmed Malawi mobile-number rule is configuration, exported as `NATIONAL_NUMBER_LENGTH` and `MOBILE_NATIONAL_PREFIXES`, so future numbering-range changes can be accommodated.
    - Return a discriminated result: { ok: true, canonical, display (like "0991 234 567"), whatsappUrl (https://wa.me/<canonical>), isInternational } or { ok: false, reason } where reason is one of TOO_SHORT, TOO_LONG, NOT_MOBILE, SPREADSHEET_DAMAGED (for values like 9.91E+11), EMPTY, INVALID_CHARACTERS.
    - Numbers with an explicit + or 00 and another country code are accepted if they have 8 to 15 digits and are marked isInternational.
    - Also export parsePhoneList(text) that splits on new lines, commas, semicolons and tabs, extracts the number from lines like "Mary 0991234567", normalizes each, de-duplicates after normalization and returns { valid, fixed (original and result), needsAttention (with reason), duplicatesMerged }.
@@ -628,7 +628,7 @@ Closing instructions: run `pnpm typecheck`, `pnpm lint` and `pnpm test` and fix 
 
 - **Express on Workers:** decided by the M2 spike. The layered design means only the controller layer changes if Hono is needed.
 - **Host password hashing on Workers:** decided by the M5 benchmark.
-- **Mobile number rule:** the 9-digit, starts-with-8-or-9 rule in M4 is an assumption. Check it against the official numbering plan.
+- **Mobile number rule:** confirmed for Malawi: mobile national numbers have 9 digits and start with 8 or 9. The shared utilities keep this rule configurable through `NATIONAL_NUMBER_LENGTH` and `MOBILE_NATIONAL_PREFIXES`.
 - **Free-tier voter limit:** the 2,500 recommendation is confirmed or changed by the M12 load test.
 - **Email provider:** the Console provider works for development. Password reset in the beta needs a real provider, so set up a free provider and a sender domain before inviting beta hosts.
 - **Frontend:** it has its own prompt pack, tooling, pnpm migration and Vercel setup. It will use the endpoints documented in `backend/docs/api.md` and the test vectors in `backend/docs/test-vectors/`. The phone normalizer and token normalizer in `backend/src/shared/` can be copied into it.

@@ -46,13 +46,13 @@ pnpm db:generate
 pnpm db:migrate
 ```
 
-Seed a demo host and one station of each voting mode by providing a precomputed password hash:
+Seed a demo host and one station of each voting mode:
 
 ```sh
-DEMO_HOST_PASSWORD_HASH='<password hash>' pnpm db:seed
+pnpm db:seed
 ```
 
-The demo host email defaults to `demo-host@example.test`; override it with `DEMO_HOST_EMAIL`. The seed contains no built-in usable password. `pnpm db:reset` recreates the schema and reapplies migrations only when `APP_ENV=development` targets `vote_app_dev`, or `APP_ENV=test` targets `vote_app_test`. The integration test helper independently verifies that the configured test URL names `vote_app_test`, applies migrations and truncates its tables.
+The demo host email defaults to `demo-host@example.test`; override it with `DEMO_HOST_EMAIL`. Its `password_hash` is a syntactically valid `pbkdf2-sha256$iterations$salt$hash` placeholder, not a credential; M5 replaces it with a real PBKDF2 hash. Voter-token, IP and fingerprint hashes are lowercase hexadecimal HMAC-SHA-256 values; session and password-reset token hashes are lowercase hexadecimal SHA-256 values. `pnpm db:reset` recreates the schema and reapplies migrations only when `APP_ENV=development` targets `vote_app_dev`, or `APP_ENV=test` targets `vote_app_test`. The integration test helper independently verifies that the configured test URL names `vote_app_test`, applies migrations and truncates its tables.
 
 ## Build and quality checks
 

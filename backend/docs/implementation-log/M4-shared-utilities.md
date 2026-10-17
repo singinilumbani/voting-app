@@ -5,7 +5,7 @@
 
 ## Files created or changed
 
-- `src/shared/constants.ts`: the configurable Malawi mobile-number assumption and specification section 11.1 defaults, caps, lockout values, and attempt limits.
+- `src/shared/constants.ts`: the configurable Malawi mobile-number rule (`NATIONAL_NUMBER_LENGTH = 9`, `MOBILE_NATIONAL_PREFIXES = ["8", "9"]`) and specification section 11.1 defaults, caps, lockout values, and attempt limits.
 - `src/shared/schemas.ts`: Zod schemas and inferred TypeScript types for shared enums, phone/token result unions, and common station, category, candidate, registration, and voter-status DTOs.
 - `src/shared/messages.ts`: typed error and status message-key constants.
 - `src/shared/phone/normalize-phone.ts`: phone cleanup, Malawi canonicalization, international validation, WhatsApp URL creation, and phone-list extraction/fixing/deduplication.
@@ -18,7 +18,8 @@
 
 ## Decisions and deviations
 
-- The phone-number prefix rule is exposed as `PHONE_NUMBER_RULE`; it remains the specification's assumption pending confirmation against Malawi's official numbering plan.
+- The phone-number prefix rule is exposed as `PHONE_NUMBER_RULE`; the follow-up clarification confirms a 9-digit national number beginning with 8 or 9, while keeping it configurable for future allocated ranges.
+- The M4b follow-up exports the confirmed rule as `NATIONAL_NUMBER_LENGTH` and `MOBILE_NATIONAL_PREFIXES`, and uses reason `NOT_MOBILE` for the specified 7-digit landline and 9-digit non-mobile prefixes.
 - Malawi numbers with an explicit country code normalize to the same canonical digits and local display as national input; other explicitly international numbers retain their country digits, display with a leading `+`, and set `isInternational: true`.
 - A repeated Malawi country code is rejected as `NOT_MOBILE`; Excel scientific notation is detected before punctuation removal and flagged as `SPREADSHEET_DAMAGED`.
 - Phone-list `valid` and `fixed` entries have `{ original, result }` shape; `needsAttention` entries have `{ original, reason }`. `fixed` includes entries whose extracted input differs from canonical/display form. Duplicate valid entries are omitted after the first and counted in `duplicatesMerged`.
@@ -46,14 +47,13 @@
 
 ## Manual steps for me
 
-- Manually remove the accidentally created out-of-workspace file at `/home/Leo/Desktop/Legacy/ voting-app/backend/src/shared/phone/normalize-phone.test.ts`; it was deliberately left untouched under the strict scope restriction.
-- Confirm the 9-digit mobile-number rule (numbers beginning with 8 or 9) against the official numbering plan.
+- None.
 
 ## Open questions
 
-- The actual official Malawi mobile-number prefix/length rule remains unconfirmed as noted in specification section 11.4.
-- The prompt does not specify whether international `display` values should be formatted according to each country's national conventions. This implementation uses `+` followed by canonical digits for other countries.
+- Section 11.4 in the retained specification still says the mobile-number rule should be confirmed; the follow-up prompt confirms it. The follow-up implementation log records this clarification without editing the specification.
+- International display formatting was clarified by the follow-up: E.164-style `+` plus canonical digits without grouping.
 
 ## Changes needed outside backend
 
-- Manual cleanup is needed for the accidental out-of-workspace file `/home/Leo/Desktop/Legacy/ voting-app/backend/src/shared/phone/normalize-phone.test.ts`. No command was run against that path after it was created.
+- None needed outside backend for M4.

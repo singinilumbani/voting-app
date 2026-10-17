@@ -5,7 +5,9 @@ import {
   candidateDtoSchema,
   categoryDtoSchema,
   MESSAGE_KEYS,
+  MOBILE_NATIONAL_PREFIXES,
   normalizePhone,
+  NATIONAL_NUMBER_LENGTH,
   parsePhoneList,
   PHONE_NUMBER_RULE,
   pollingStationDtoSchema,
@@ -28,7 +30,9 @@ import {
 } from './index.js';
 
 describe('shared constants and common schemas', () => {
-  it('exports the documented configurable mobile-number assumption', () => {
+  it('exports the confirmed configurable Malawi mobile-number rule', () => {
+    expect(NATIONAL_NUMBER_LENGTH).toBe(9);
+    expect(MOBILE_NATIONAL_PREFIXES).toEqual(['8', '9']);
     expect(PHONE_NUMBER_RULE).toEqual({
       countryCallingCode: '265',
       nationalNumberLength: 9,

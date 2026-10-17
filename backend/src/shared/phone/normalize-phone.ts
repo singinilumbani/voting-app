@@ -1,4 +1,8 @@
-import { PHONE_NUMBER_RULE } from '../constants.js';
+import {
+  MOBILE_NATIONAL_PREFIXES,
+  NATIONAL_NUMBER_LENGTH,
+  PHONE_NUMBER_RULE
+} from '../constants.js';
 import type {
   PhoneListResult,
   PhoneNormalizationError,
@@ -37,6 +41,12 @@ function normalizeInternational(digits: string): PhoneNormalizationSuccess {
   };
 }
 
+/**
+ * Normalize local/international phone input to canonical digits.
+ * Malawi mobile numbers use a 9-digit national number beginning with 8 or 9.
+ * Explicit non-Malawi international numbers (8–15 digits) display as +digits;
+ * all WhatsApp links use canonical digits without a plus sign.
+ */
 export function normalizePhone(input: string): PhoneNormalizationResult {
   if (input.trim().length === 0) {
     return failure('EMPTY');
@@ -81,15 +91,26 @@ export function normalizePhone(input: string): PhoneNormalizationResult {
   }
 
   if (cleaned.startsWith('0')) {
-    return validateMalawiNationalNumber(cleaned.slice(1));
+    const nationalNumber = cleaned.slice(1);
+    if (nationalNumber.length === NATIONAL_NUMBER_LENGTH - 2 && nationalNumber.startsWith('1')) {
+      return failure('NOT_MOBILE');
+    }
+    return validateMalawiNationalNumber(nationalNumber);
   }
 
   if (explicitlyInternational && cleaned.length >= 8 && cleaned.length <= 15) {
     return normalizeInternational(cleaned);
   }
 
-  if (cleaned.length === PHONE_NUMBER_RULE.nationalNumberLength) {
+  if (cleaned.length === NATIONAL_NUMBER_LENGTH) {
     return validateMalawiNationalNumber(cleaned);
+  }
+  if (
+    !explicitlyInternational &&
+    cleaned.length === NATIONAL_NUMBER_LENGTH - 2 &&
+    cleaned.startsWith('1')
+  ) {
+    return failure('NOT_MOBILE');
   }
   if (cleaned.length < PHONE_NUMBER_RULE.nationalNumberLength) {
     return failure('TOO_SHORT');
@@ -98,13 +119,16 @@ export function normalizePhone(input: string): PhoneNormalizationResult {
 }
 
 function validateMalawiNationalNumber(nationalNumber: string): PhoneNormalizationResult {
-  if (nationalNumber.length < PHONE_NUMBER_RULE.nationalNumberLength) {
+  if (nationalNumber.length === NATIONAL_NUMBER_LENGTH - 2 && nationalNumber.startsWith('1')) {
+    return failure('NOT_MOBILE');
+  }
+  if (nationalNumber.length < NATIONAL_NUMBER_LENGTH) {
     return failure('TOO_SHORT');
   }
-  if (nationalNumber.length > PHONE_NUMBER_RULE.nationalNumberLength) {
+  if (nationalNumber.length > NATIONAL_NUMBER_LENGTH) {
     return failure('TOO_LONG');
   }
-  if (!PHONE_NUMBER_RULE.mobileNumberPrefixes.some((prefix) => nationalNumber.startsWith(prefix))) {
+  if (!MOBILE_NATIONAL_PREFIXES.some((prefix) => nationalNumber.startsWith(prefix))) {
     return failure('NOT_MOBILE');
   }
   return makeMalawiResult(nationalNumber);

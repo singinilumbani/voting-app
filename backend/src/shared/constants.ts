@@ -1,7 +1,9 @@
+export const NATIONAL_NUMBER_LENGTH = 9;
+export const MOBILE_NATIONAL_PREFIXES = ['8', '9'] as const;
 export const PHONE_NUMBER_RULE = Object.freeze({
   countryCallingCode: '265',
-  nationalNumberLength: 9,
-  mobileNumberPrefixes: ['8', '9'] as const
+  nationalNumberLength: NATIONAL_NUMBER_LENGTH,
+  mobileNumberPrefixes: MOBILE_NATIONAL_PREFIXES
 });
 
 export const VOTER_TOKEN = Object.freeze({

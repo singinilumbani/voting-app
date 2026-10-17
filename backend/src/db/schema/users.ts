@@ -1,13 +1,14 @@
-import { timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import { check, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
 import { accountTypeEnum, planEnum } from './enums.js';
-import { pgTable, uniqueIndex } from 'drizzle-orm/pg-core';
+import { PASSWORD_HASH_REGEX } from '@/shared/crypto/hash-formats.js';
 
 export const users = pgTable(
   'users',
   {
     id: uuid('id').defaultRandom().primaryKey(),
     username: varchar('username', { length: 80 }).notNull(),
-    passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+    passwordHash: text('password_hash').notNull(),
     email: varchar('email', { length: 320 }).notNull(),
     accountType: accountTypeEnum('account_type').notNull(),
     plan: planEnum('plan').notNull().default('FREE'),
@@ -18,6 +19,10 @@ export const users = pgTable(
   },
   (table) => [
     uniqueIndex('users_username_unique').on(table.username),
-    uniqueIndex('users_email_unique').on(table.email)
+    uniqueIndex('users_email_unique').on(table.email),
+    check(
+      'users_password_hash_format_check',
+      sql`${table.passwordHash} ~ ${sql.raw(`'${PASSWORD_HASH_REGEX.source}'`)}`
+    )
   ]
 );

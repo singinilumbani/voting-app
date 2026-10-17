@@ -13,7 +13,9 @@ import {
 } from 'drizzle-orm/pg-core';
 import { approvalStatusEnum } from './enums.js';
 import { pollingStations } from './polling-stations.js';
+import { HEX64_REGEX } from '@/shared/crypto/hash-formats.js';
 
+// One ballot per voter is enforced by locking this row before checking/updating has_voted; voter_id is not a separate column.
 export const registeredVoters = pgTable(
   'registered_voters',
   {
@@ -27,12 +29,12 @@ export const registeredVoters = pgTable(
     rejectionReason: text('rejection_reason'),
     registrationAttempts: integer('registration_attempts').notNull().default(0),
     blocked: boolean('blocked').notNull().default(false),
-    tokenHash: varchar('token_hash', { length: 128 }),
+    tokenHash: text('token_hash'),
     failedAttempts: integer('failed_attempts').notNull().default(0),
     lockedUntil: timestamp('locked_until', { withTimezone: true, mode: 'date' }),
-    deviceFingerprintHash: varchar('device_fingerprint_hash', { length: 128 }),
+    deviceFingerprintHash: text('device_fingerprint_hash'),
     clientDeviceUuid: uuid('client_device_uuid'),
-    ipHash: varchar('ip_hash', { length: 128 }),
+    ipHash: text('ip_hash'),
     flagReason: text('flag_reason'),
     hasVoted: boolean('has_voted').notNull().default(false),
     votedAt: timestamp('voted_at', { withTimezone: true, mode: 'date' }),
@@ -50,6 +52,18 @@ export const registeredVoters = pgTable(
     index('registered_voters_station_approval_status_idx').on(
       table.pollingStationId,
       table.approvalStatus
+    ),
+    check(
+      'registered_voters_token_hash_format_check',
+      sql`${table.tokenHash} IS NULL OR ${table.tokenHash} ~ ${sql.raw(`'${HEX64_REGEX.source}'`)}`
+    ),
+    check(
+      'registered_voters_ip_hash_format_check',
+      sql`${table.ipHash} IS NULL OR ${table.ipHash} ~ ${sql.raw(`'${HEX64_REGEX.source}'`)}`
+    ),
+    check(
+      'registered_voters_device_fingerprint_hash_format_check',
+      sql`${table.deviceFingerprintHash} IS NULL OR ${table.deviceFingerprintHash} ~ ${sql.raw(`'${HEX64_REGEX.source}'`)}`
     ),
     check(
       'registered_voters_voted_at_minute_precision_check',

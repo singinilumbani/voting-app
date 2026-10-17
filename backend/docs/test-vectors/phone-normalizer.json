@@ -99,6 +99,26 @@
     }
   },
   {
+    "input": "+27 82 123 4567",
+    "expected": {
+      "ok": true,
+      "canonical": "27821234567",
+      "display": "+27821234567",
+      "whatsappUrl": "https://wa.me/27821234567",
+      "isInternational": true
+    }
+  },
+  {
+    "input": "0027821234567",
+    "expected": {
+      "ok": true,
+      "canonical": "27821234567",
+      "display": "+27821234567",
+      "whatsappUrl": "https://wa.me/27821234567",
+      "isInternational": true
+    }
+  },
+  {
     "input": "+991234567",
     "expected": {
       "ok": true,
@@ -127,6 +147,38 @@
       "isInternational": false
     }
   },
+  {
+    "input": "0841234567",
+    "expected": {
+      "ok": true,
+      "canonical": "265841234567",
+      "display": "0841 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "0991234567",
+    "expected": {
+      "ok": true,
+      "canonical": "265991234567",
+      "display": "0991 234 567",
+      "isInternational": false
+    }
+  },
+  {
+    "input": "0981234567",
+    "expected": {
+      "ok": true,
+      "canonical": "265981234567",
+      "display": "0981 234 567",
+      "isInternational": false
+    }
+  },
+  { "input": "01 234 567", "expected": { "ok": false, "reason": "NOT_MOBILE" } },
+  { "input": "0212345678", "expected": { "ok": false, "reason": "NOT_MOBILE" } },
+  { "input": "0771234567", "expected": { "ok": false, "reason": "NOT_MOBILE" } },
+  { "input": "+1234567", "expected": { "ok": false, "reason": "TOO_SHORT" } },
+  { "input": "+1234567890123456", "expected": { "ok": false, "reason": "TOO_LONG" } },
   { "input": "0123456789", "expected": { "ok": false, "reason": "NOT_MOBILE" } },
   { "input": "9.91E+11", "expected": { "ok": false, "reason": "SPREADSHEET_DAMAGED" } },
   { "input": "1E10", "expected": { "ok": false, "reason": "SPREADSHEET_DAMAGED" } },

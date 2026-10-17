@@ -5,7 +5,13 @@ import { normalizePhone, parsePhoneList } from './normalize-phone.js';
 interface PhoneVector {
   input: string;
   expected:
-    | { ok: true; canonical: string; display: string; isInternational: boolean }
+    | {
+        ok: true;
+        canonical: string;
+        display: string;
+        whatsappUrl?: string;
+        isInternational: boolean;
+      }
     | { ok: false; reason: string };
 }
 
@@ -19,7 +25,7 @@ describe('normalizePhone shared vectors', () => {
     if (expected.ok) {
       expect(result).toMatchObject({
         ...expected,
-        whatsappUrl: `https://wa.me/${expected.canonical}`
+        whatsappUrl: expected.whatsappUrl ?? `https://wa.me/${expected.canonical}`
       });
     } else {
       expect(result).toEqual(expected);

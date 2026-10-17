@@ -1,12 +1,13 @@
 import { VOTER_TOKEN } from '../constants.js';
+import { hmacHex } from '../crypto/crypto.js';
+import { randomBytes } from '../crypto/encoding.js';
 import type { TokenNormalizationResult } from '../schemas.js';
 
 const tokenAlphabetPattern = /^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]+$/u;
-const textEncoder = new TextEncoder();
 
 export function generateVoterToken(): string {
-  const randomBytes = crypto.getRandomValues(new Uint8Array(VOTER_TOKEN.payloadLength));
-  const token = Array.from(randomBytes, (byte) => VOTER_TOKEN.alphabet[byte & 31]).join('');
+  const bytes = randomBytes(VOTER_TOKEN.payloadLength);
+  const token = Array.from(bytes, (byte) => VOTER_TOKEN.alphabet[byte & 31]).join('');
   const groups = token.match(/.{4}/gu);
   if (!groups || groups.length !== 3) {
     throw new Error('Failed to format voter token');
@@ -38,26 +39,12 @@ export async function hashToken(
   stationId: string,
   normalizedToken: string
 ): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    textEncoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  const signature = await crypto.subtle.sign(
-    'HMAC',
-    key,
-    textEncoder.encode(`${stationId}:${normalizedToken}`)
-  );
-  return Array.from(new Uint8Array(signature), (byte) => byte.toString(16).padStart(2, '0')).join(
-    ''
-  );
+  return hmacHex(secret, `${stationId}:${normalizedToken}`);
 }
 
 export function constantTimeEqual(left: string, right: string): boolean {
-  const leftBytes = textEncoder.encode(left);
-  const rightBytes = textEncoder.encode(right);
+  const leftBytes = new TextEncoder().encode(left);
+  const rightBytes = new TextEncoder().encode(right);
   const comparisonLength = Math.max(leftBytes.length, rightBytes.length);
   let difference = leftBytes.length ^ rightBytes.length;
 

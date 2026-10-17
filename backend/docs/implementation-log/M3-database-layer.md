@@ -26,7 +26,7 @@
 - `cast_votes` contains only `id`, `polling_station_id`, `category_id`, and nullable `candidate_id`; the generated migration, repositories, and schema test contain no voter/device link or vote timestamp. The activity log has a constrained event enum and no arbitrary payload field, preventing it from becoming a place to store vote data.
 - The Neon Worker entry imports only the Neon client. It creates a fresh WebSocket Pool per request and closes it after the response; the Node server uses node-postgres and a shared pool, closed on SIGINT/SIGTERM. The CLI migration/reset scripts require `DB_DRIVER=pg`.
 - `db:reset` accepts only `APP_ENV=development` with database `vote_app_dev` or `APP_ENV=test` with database `vote_app_test`, and refuses other drivers. Test helpers independently validate the test database name before migration or truncation.
-- The demo seed requires `DEMO_HOST_PASSWORD_HASH`; it does not embed a usable password or generate password hashes. It creates a demo host and both voting modes with random public identifiers.
+- The demo seed stores a syntactically valid PBKDF2-format placeholder password hash, not a usable credential; M5 replaces it with a real hash. The seed creates a demo host and both voting modes with random public identifiers.
 - `@types/pg` was added only after separate approval because the existing `pg` runtime dependency has no declarations and strict typechecking otherwise failed.
 - At the initial implementation handoff, the actual PostgreSQL migrations and catalog/constraint integration tests had not been run because the shell did not load `.env.local`. The user subsequently confirmed the database URLs were in `backend/.env.local`; both migrations were applied successfully and the live database tests were run and passed.
 - No implementation outside `backend/` was needed. The existing legacy JavaScript database module/schema were left unchanged; this module establishes the new TypeScript backend persistence layer without changing legacy routes.
@@ -65,12 +65,13 @@
 
 - Migration has already been applied to both configured databases.
 - To rerun the PostgreSQL integration tests, set `DATABASE_URL` to the `vote_app_test` database and run `pnpm test`. The helper migrates and truncates that test database.
-- Set a precomputed password hash as `DEMO_HOST_PASSWORD_HASH` (and optionally `DEMO_HOST_EMAIL`) before running `pnpm db:seed`; no plaintext default password is supplied.
+- `pnpm db:seed` may use its placeholder hash until M5 replaces it; set `DEMO_HOST_EMAIL` only if a different demo account address is desired.
 - Configure the Neon Worker `DATABASE_URL` as a secret. Wrangler already sets `DB_DRIVER=neon`.
 
 ## Open questions
 
-- Specification section 4.9 mentions a unique `(polling_station_id, voter_id)` index on `RegisteredVoters`, but section 9 and this prompt define the voter table with `id` and require station/phone uniqueness without a `voter_id` column. The implementation applies the requested station/phone unique constraint and keeps all voter references out of `cast_votes`; clarify whether any additional voter-side index is intended.
+- Clarification A: `registered_voters.id` identifies the voter row; `(polling_station_id, phone_number)` is unique. There is no separate `voter_id` column or unique index on `(polling_station_id, voter_id)`. M8 prevents duplicate Closed Vote submissions by locking the voter row before checking/updating `has_voted`; Public Poll uses the station-scoped unique device identifier in `device_records`.
+- Clarification B adds hash-format CHECK constraints and uses text columns for hashes. See M4b follow-up for the exact regular expressions, migration and verification.
 - The specification does not define the hash representation or algorithm for password hashes and token hashes. The database stores supplied hashes only; generation/verification is outside this no-business-logic module.
 
 ## Changes needed outside backend

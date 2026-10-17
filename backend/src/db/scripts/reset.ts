@@ -30,6 +30,7 @@ async function main(): Promise<void> {
   try {
     await client.db.execute(sql.raw('DROP SCHEMA public CASCADE'));
     await client.db.execute(sql.raw('CREATE SCHEMA public'));
+    await client.db.execute(sql.raw('DROP SCHEMA IF EXISTS drizzle CASCADE'));
     await migrate(client.db, {
       migrationsFolder: fileURLToPath(new URL('../migrations', import.meta.url))
     });
