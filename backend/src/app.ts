@@ -5,6 +5,7 @@ import type { AppDependencies } from './core/types.js';
 import { bodyLimit } from './middleware/body-limit.js';
 import { createCorsMiddleware } from './middleware/cors.js';
 import { securityHeaders } from './middleware/security-headers.js';
+import { databaseLifecycle } from './middleware/database-lifecycle.js';
 
 export function createApp(deps: AppDependencies) {
   const app = express();
@@ -14,6 +15,7 @@ export function createApp(deps: AppDependencies) {
   app.use(securityHeaders);
   app.use(createCorsMiddleware(deps.config));
   app.use(bodyLimit);
+  app.use(databaseLifecycle(deps));
 
   app.get('/api/v1/health', deps.healthController.get);
 

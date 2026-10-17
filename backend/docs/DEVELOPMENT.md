@@ -35,6 +35,25 @@ pnpm dev:worker
 
 The Worker entrypoint uses Node.js HTTP compatibility through Cloudflare's `httpServerHandler`. No Cloudflare login or deployment is needed for local development. Do not commit `.dev.vars` or other secrets.
 
+## Database
+
+Use PostgreSQL database `vote_app_dev` locally and `vote_app_test` for integration tests. Set `DATABASE_URL` in the process environment. `DB_DRIVER=pg` uses node-postgres for local Node/test runs; Wrangler sets `DB_DRIVER=neon` and uses the Neon WebSocket Pool. Configure the Neon `DATABASE_URL` as a Worker secret. The Worker creates and closes a database pool for each request.
+
+Generate schema migrations and apply them with:
+
+```sh
+pnpm db:generate
+pnpm db:migrate
+```
+
+Seed a demo host and one station of each voting mode by providing a precomputed password hash:
+
+```sh
+DEMO_HOST_PASSWORD_HASH='<password hash>' pnpm db:seed
+```
+
+The demo host email defaults to `demo-host@example.test`; override it with `DEMO_HOST_EMAIL`. The seed contains no built-in usable password. `pnpm db:reset` recreates the schema and reapplies migrations only when `APP_ENV=development` targets `vote_app_dev`, or `APP_ENV=test` targets `vote_app_test`. The integration test helper independently verifies that the configured test URL names `vote_app_test`, applies migrations and truncates its tables.
+
 ## Build and quality checks
 
 ```sh

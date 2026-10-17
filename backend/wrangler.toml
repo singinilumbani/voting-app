@@ -2,3 +2,6 @@ name = "voting-app-backend"
 main = "src/worker.ts"
 compatibility_date = "2026-10-15"
 compatibility_flags = ["nodejs_compat"]
+
+[vars]
+DB_DRIVER = "neon"
