@@ -32,7 +32,9 @@ const testTables = [
 ] as const;
 
 export async function createTestDatabase(): Promise<DbClient> {
-  const environment = testDatabaseEnvironment.parse(process.env);
+  const environment = testDatabaseEnvironment.parse({
+    DATABASE_URL: process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL
+  });
   const config = loadConfig({
     ...process.env,
     APP_ENV: 'test',
@@ -54,7 +56,9 @@ export async function createTestDatabase(): Promise<DbClient> {
 }
 
 export async function truncateTestDatabase(client: DbClient): Promise<void> {
-  testDatabaseEnvironment.parse(process.env);
+  testDatabaseEnvironment.parse({
+    DATABASE_URL: process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL
+  });
   await client.db.execute(
     sql.raw(`TRUNCATE TABLE ${testTables.join(', ')} RESTART IDENTITY CASCADE`)
   );

@@ -80,7 +80,8 @@ describe.skipIf(process.env.DATABASE_URL === undefined)('PostgreSQL schema const
       'registered_voters_pkey',
       'registered_voters_station_approval_status_idx',
       'registered_voters_station_phone_unique',
-      'registered_voters_station_token_hash_idx'
+      'registered_voters_station_token_hash_idx',
+      'registered_voters_station_voted_at_idx'
     ]);
     expect(indexes.rows.map((index) => index.indexdef).join('\n')).toContain(
       '(polling_station_id, phone_number)'
