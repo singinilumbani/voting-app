@@ -121,16 +121,16 @@ describe('database hash CHECK regex parity', () => {
 
   it('uses the same regex sources in the generated migration CHECK constraints', () => {
     const migrationPath = fileURLToPath(new URL('../../db/migrations/', import.meta.url));
-    const migrationName = readdirSync(migrationPath)
+    const migrations = readdirSync(migrationPath)
       .filter((file) => /^\d{4}_.+\.sql$/u.test(file))
       .sort()
-      .at(-1);
-    if (!migrationName) {
+      .map((file) => readFileSync(`${migrationPath}/${file}`, 'utf8'))
+      .join('\n');
+    if (!migrations) {
       throw new Error('No generated database migration was found');
     }
-    const migration = readFileSync(`${migrationPath}/${migrationName}`, 'utf8');
 
-    expect(migration).toContain(`'${HEX64_REGEX.source}'`);
-    expect(migration).toContain(`'${PASSWORD_HASH_REGEX.source}'`);
+    expect(migrations).toContain(`'${HEX64_REGEX.source}'`);
+    expect(migrations).toContain(`'${PASSWORD_HASH_REGEX.source}'`);
   });
 });

@@ -25,6 +25,7 @@ const testTables = [
   'categories',
   'polling_stations',
   'password_reset_tokens',
+  'email_verification_tokens',
   'sessions',
   'users'
 ] as const;

@@ -18,6 +18,7 @@
     "db:migrate": "tsx src/db/scripts/migrate.ts",
     "db:seed": "tsx src/db/scripts/seed.ts",
     "db:reset": "tsx src/db/scripts/reset.ts",
+    "password:benchmark": "tsx scripts/benchmark-password.ts",
     "format": "prettier --write \"**/*.{ts,tsx}\" \"*.{json,jsonc,mjs}\""
   },
   "keywords": [],

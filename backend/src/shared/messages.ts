@@ -12,6 +12,17 @@ export const MESSAGE_KEYS = Object.freeze({
       invalidLength: 'errors.token.invalid_length',
       invalidCharacters: 'errors.token.invalid_characters'
     }),
+    hostAuth: Object.freeze({
+      usernameTaken: 'errors.host_auth.username_taken',
+      emailTaken: 'errors.host_auth.email_taken',
+      invalidCredentials: 'errors.host_auth.invalid_credentials',
+      rateLimited: 'errors.host_auth.rate_limited',
+      resetTokenInvalid: 'errors.host_auth.reset_token_invalid',
+      verificationTokenInvalid: 'errors.host_auth.verification_token_invalid',
+      tierDowngradeConfirmationRequired: 'errors.host_auth.tier_downgrade_confirmation_required',
+      currentPasswordInvalid: 'errors.host_auth.current_password_invalid',
+      accountDeletionConfirmationRequired: 'errors.host_auth.account_deletion_confirmation_required'
+    }),
     validation: 'errors.validation'
   }),
   status: Object.freeze({
@@ -30,6 +41,12 @@ export const MESSAGE_KEYS = Object.freeze({
       votingClosed: 'status.station.voting_closed',
       archived: 'status.station.archived',
       cancelled: 'status.station.cancelled'
+    }),
+    hostAuth: Object.freeze({
+      passwordResetIfExists: 'status.host_auth.password_reset_if_exists',
+      passwordReset: 'status.host_auth.password_reset',
+      emailVerified: 'status.host_auth.email_verified',
+      passwordChanged: 'status.host_auth.password_changed'
     })
   })
 });
@@ -38,5 +55,7 @@ export type MessageKey =
   | (typeof MESSAGE_KEYS.errors.phone)[keyof typeof MESSAGE_KEYS.errors.phone]
   | (typeof MESSAGE_KEYS.errors.token)[keyof typeof MESSAGE_KEYS.errors.token]
   | typeof MESSAGE_KEYS.errors.validation
+  | (typeof MESSAGE_KEYS.errors.hostAuth)[keyof typeof MESSAGE_KEYS.errors.hostAuth]
   | (typeof MESSAGE_KEYS.status.voter)[keyof typeof MESSAGE_KEYS.status.voter]
-  | (typeof MESSAGE_KEYS.status.station)[keyof typeof MESSAGE_KEYS.status.station];
+  | (typeof MESSAGE_KEYS.status.station)[keyof typeof MESSAGE_KEYS.status.station]
+  | (typeof MESSAGE_KEYS.status.hostAuth)[keyof typeof MESSAGE_KEYS.status.hostAuth];

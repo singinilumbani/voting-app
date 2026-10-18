@@ -94,3 +94,95 @@ All endpoints under `/api/admin` require `Authorization: Bearer <token>` from th
 ## Authentication errors
 
 Protected admin routes return `401 { "error": "No token provided" }` when the bearer token is absent and `401 { "error": "Invalid or expired token" }` when verification fails.
+
+## Host account API
+
+Host account endpoints use `/api/v1/host/auth`. Authentication uses the `host_session` HttpOnly, Secure, SameSite=Lax cookie; session credentials are never returned in JSON. Error responses retain the common shape `{ "error": { "key": string, "params"?: object, "requestId": string } }`. Request validation errors use `errors.validation.failed`.
+
+The successful host DTO contains `id`, `username`, `email`, `accountType`, `plan`, `createdAt`, `purgeAt`, and `lastLoginAt`. It never contains the password hash or a raw session/reset token.
+
+### `POST /api/v1/host/auth/signup`
+
+- **Auth:** None.
+- **Request:** JSON `{ "username": string, "password": string, "email": string, "accountType": "TEMPORARY" | "LONG_TERM", "termsAccepted": true }`. Username must be 3-80 alphanumeric characters; password must be 12-256 characters.
+- **Response:** `201 { "accountType": "TEMPORARY" | "LONG_TERM" }` with a new `host_session` cookie when email verification is disabled. With `ENABLE_EMAIL_VERIFICATION=true`, returns `202 { "accountType": ... }`, sends a verification link, and does not issue a session until the address is verified.
+- **Errors:** `400 errors.validation.failed`; `409 errors.host_auth.username_taken`; `409 errors.host_auth.email_taken`; `503 errors.auth.not_configured`.
+
+### `POST /api/v1/host/auth/login`
+
+- **Auth:** None.
+- **Request:** JSON `{ "username": string, "password": string }`.
+- **Response:** `200 { "host": HostDto }` and the `host_session` cookie.
+- **Errors:** `400 errors.validation.failed`; `401 errors.host_auth.invalid_credentials` for either an unknown username, incorrect password, or unverified email; `429 errors.host_auth.rate_limited`; `503 errors.auth.not_configured`.
+
+### `POST /api/v1/host/auth/logout`
+
+- **Auth:** Optional `host_session` cookie; the cookie is cleared whether or not it is valid.
+- **Request:** No body.
+- **Response:** `204` and a cleared `host_session` cookie.
+- **Errors:** `503 errors.auth.not_configured` if the auth database is unavailable.
+
+### `GET /api/v1/host/auth/me`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** No body.
+- **Response:** `200 { "host": HostDto }`.
+- **Errors:** `401 errors.auth.unauthorized`; `503 errors.auth.not_configured`.
+
+### `POST /api/v1/host/auth/forgot-password`
+
+- **Auth:** None.
+- **Request:** JSON `{ "email": string }`.
+- **Response:** `202 { "messageKey": "status.host_auth.password_reset_if_exists" }` for both known and unknown addresses. A reset link is emailed only when an account matches.
+- **Errors:** `400 errors.validation.failed`; `429 errors.host_auth.rate_limited`; `503 errors.auth.not_configured`.
+- **Email link:** `APP_BASE_URL/reset-password?token=...`; a configured provider delivery failure is logged without changing the neutral response.
+
+### `POST /api/v1/host/auth/reset-password`
+
+- **Auth:** None.
+- **Request:** JSON `{ "token": string, "password": string }`. The token is single-use, expires after one hour, and the new password must be 12-256 characters.
+- **Response:** `200 { "messageKey": "status.host_auth.password_reset" }`.
+- **Errors:** `400 errors.validation.failed`; `400 errors.host_auth.reset_token_invalid`; `503 errors.auth.not_configured`.
+
+### `GET /api/v1/host/auth/verify-email` (verification-enabled deployments)
+
+- **Auth:** None.
+- **Request:** Query string `token=<single-use token>`.
+- **Response:** `200 { "messageKey": "status.host_auth.email_verified" }`.
+- **Errors:** `400 errors.validation.failed`; `400 errors.host_auth.verification_token_invalid`; `503 errors.auth.not_configured`.
+- **Email link:** sent to `APP_BASE_URL/verify-email?token=...`; the front end can then call this verification endpoint.
+
+### `PATCH /api/v1/host/auth/profile`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** JSON with at least one of `{ "username"?: string, "email"?: string }`.
+- **Response:** `200 { "host": HostDto, "verificationRequired": boolean }`. Changing email clears its verification timestamp; when verification is enabled, a new verification link is sent.
+- **Errors:** `400 errors.validation.failed`; `401 errors.auth.unauthorized`; `409 errors.host_auth.username_taken`; `409 errors.host_auth.email_taken`; `503 errors.auth.not_configured`.
+
+### `POST /api/v1/host/auth/change-password`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** JSON `{ "currentPassword": string, "newPassword": string }`.
+- **Response:** `200 { "messageKey": "status.host_auth.password_changed" }`. Other sessions are revoked; the current session remains active.
+- **Errors:** `400 errors.validation.failed`; `401 errors.host_auth.current_password_invalid`; `401 errors.auth.unauthorized`; `503 errors.auth.not_configured`.
+
+### `POST /api/v1/host/auth/change-tier`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** JSON `{ "accountType": "TEMPORARY" | "LONG_TERM", "confirm"?: "DELETE" }`. Downgrading from long-term requires `confirm: "DELETE"`.
+- **Response:** `200 { "host": HostDto }`.
+- **Errors:** `400 errors.validation.failed`; `400 errors.host_auth.tier_downgrade_confirmation_required`; `401 errors.auth.unauthorized`; `503 errors.auth.not_configured`.
+
+### `POST /api/v1/host/auth/export-data`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** No body.
+- **Response:** `200` JSON export containing the host profile, owned stations and their categories/candidates, registered voters, device records, cast votes, activity log, and payments as separate collections. Cast votes are not joined to voters.
+- **Errors:** `401 errors.auth.unauthorized`; `503 errors.auth.not_configured`.
+
+### `DELETE /api/v1/host/auth/account`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** JSON `{ "confirm": "DELETE" }`.
+- **Response:** `204` and a cleared `host_session` cookie. This permanently deletes the host and all station-owned data in the same transaction.
+- **Errors:** `400 errors.validation.failed`; `400 errors.host_auth.account_deletion_confirmation_required`; `401 errors.auth.unauthorized`; `503 errors.auth.not_configured`.

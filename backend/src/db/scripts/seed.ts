@@ -1,17 +1,15 @@
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { loadConfig } from '../../config/env.js';
+import { Pbkdf2PasswordHasher } from '../../services/password-hasher.js';
 import { createDbClient } from '../factory.js';
 import { pollingStations } from '../schema/polling-stations.js';
 import { users } from '../schema/users.js';
 
 const seedEnvironmentSchema = z.object({
-  DEMO_HOST_EMAIL: z.string().email().default('demo-host@example.test')
+  DEMO_HOST_EMAIL: z.string().email().default('demo-host@example.test'),
+  DEMO_HOST_PASSWORD: z.string().min(12).max(256)
 });
-
-// Syntactically valid placeholder only; M5 replaces it with a real PBKDF2 hash.
-const DEMO_HOST_PASSWORD_HASH =
-  'pbkdf2-sha256$600000$MDEyMzQ1Njc4OWFiY2RlZg$MDEyMzQ1Njc4OWFiY2RlZg';
 
 function createPublicId(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(10)), (byte) =>
@@ -20,11 +18,16 @@ function createPublicId(): string {
 }
 
 async function main(): Promise<void> {
-  const { DEMO_HOST_EMAIL } = seedEnvironmentSchema.parse(process.env);
+  const { DEMO_HOST_EMAIL, DEMO_HOST_PASSWORD } = seedEnvironmentSchema.parse(process.env);
+  const demoHostEmail = DEMO_HOST_EMAIL.trim().toLowerCase();
   const config = loadConfig(process.env);
   if (!config.databaseUrl) {
     throw new Error('DATABASE_URL is required to seed the database');
   }
+  const passwordHash = await new Pbkdf2PasswordHasher(config.passwordHashIterations).hash(
+    DEMO_HOST_PASSWORD
+  );
+  const emailVerifiedAt = new Date();
 
   const client = await createDbClient(config);
   async function findOrCreateStation(
@@ -56,14 +59,15 @@ async function main(): Promise<void> {
       .insert(users)
       .values({
         username: 'demo-host',
-        passwordHash: DEMO_HOST_PASSWORD_HASH,
-        email: DEMO_HOST_EMAIL,
+        passwordHash,
+        email: demoHostEmail,
         accountType: 'LONG_TERM',
-        plan: 'FREE'
+        plan: 'FREE',
+        emailVerifiedAt
       })
       .onConflictDoUpdate({
         target: users.email,
-        set: { username: 'demo-host', passwordHash: DEMO_HOST_PASSWORD_HASH }
+        set: { username: 'demo-host', passwordHash, emailVerifiedAt }
       })
       .returning({ id: users.id });
     const demoHost = host[0];

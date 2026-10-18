@@ -52,7 +52,21 @@ Seed a demo host and one station of each voting mode:
 pnpm db:seed
 ```
 
-The demo host email defaults to `demo-host@example.test`; override it with `DEMO_HOST_EMAIL`. Its `password_hash` is a syntactically valid `pbkdf2-sha256$iterations$salt$hash` placeholder, not a credential; M5 replaces it with a real PBKDF2 hash. Voter-token, IP and fingerprint hashes are lowercase hexadecimal HMAC-SHA-256 values; session and password-reset token hashes are lowercase hexadecimal SHA-256 values. `pnpm db:reset` recreates the schema and reapplies migrations only when `APP_ENV=development` targets `vote_app_dev`, or `APP_ENV=test` targets `vote_app_test`. The integration test helper independently verifies that the configured test URL names `vote_app_test`, applies migrations and truncates its tables.
+The demo host email defaults to `demo-host@example.test`; override it with `DEMO_HOST_EMAIL`. Set `DEMO_HOST_PASSWORD` before running `pnpm db:seed`; the script hashes it with PBKDF2-SHA256 and does not log it. Voter-token, IP and fingerprint hashes are lowercase hexadecimal HMAC-SHA-256 values; session and password-reset token hashes are lowercase hexadecimal SHA-256 values. `pnpm db:reset` recreates the schema and reapplies migrations only when `APP_ENV=development` targets `vote_app_dev`, or `APP_ENV=test` targets `vote_app_test`. The integration test helper independently verifies that the configured test URL names `vote_app_test`, applies migrations and truncates its tables.
+
+## Host accounts
+
+The host API lives under `/api/v1/host/auth`. Configure `APP_BASE_URL` for verification/reset links, `COOKIE_DOMAIN` for deployments that require a cookie domain (leave it empty locally), and `PASSWORD_HASH_ITERATIONS` for the PBKDF2-SHA256 hasher (default: `5000`). Session cookies are always Secure, HttpOnly and SameSite=Lax. Email verification is disabled by default for beta; set `ENABLE_EMAIL_VERIFICATION=true` to require a single-use verification link. `EMAIL_PROVIDER=console` is the default; it logs only the template key and content with the link redacted, so no recipient, token, or credential is logged. Set `EMAIL_PROVIDER=brevo`, `BREVO_API_KEY`, and `EMAIL_FROM` to use Brevo delivery. Email services in this module only accept host verification/reset messages; no voter email path is provided.
+
+Benchmark the configured password hash without printing the derived hash or benchmark password:
+
+```sh
+pnpm password:benchmark
+```
+
+See [runtime-spike.md](./runtime-spike.md) for the local Node measurement and its Workers-runtime limitation.
+
+TEMPORARY host accounts receive an initial `purge_at` seven days after signup or tier downgrade. A later election lifecycle must update that deadline to seven days after election completion, as required by the retention specification.
 
 ## Build and quality checks
 

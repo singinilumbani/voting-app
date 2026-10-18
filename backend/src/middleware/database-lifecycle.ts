@@ -12,6 +12,7 @@ export function databaseLifecycle(dependencies: AppDependencies) {
     void provider()
       .then((client) => {
         response.locals.database = client.db;
+        response.locals.databaseClient = client;
 
         if (dependencies.closeDatabaseClientAfterRequest) {
           let closed = false;

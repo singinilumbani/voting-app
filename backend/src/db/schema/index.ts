@@ -3,6 +3,7 @@ export * from './candidates.js';
 export * from './categories.js';
 export * from './cast-votes.js';
 export * from './device-records.js';
+export * from './email-verification-tokens.js';
 export * from './enums.js';
 export * from './password-reset-tokens.js';
 export * from './payments.js';

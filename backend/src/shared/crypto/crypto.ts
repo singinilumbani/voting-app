@@ -5,8 +5,18 @@ function toHex(bytes: Uint8Array): string {
 }
 
 export async function sha256Hex(input: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', textEncoder.encode(input));
+  return sha256BytesHex(textEncoder.encode(input));
+}
+
+export async function sha256BytesHex(input: Uint8Array): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', toArrayBuffer(input));
   return toHex(new Uint8Array(digest));
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
 }
 
 export async function hmacHex(secret: string, message: string): Promise<string> {

@@ -3,16 +3,40 @@ import { HealthController } from './controllers/health.controller.js';
 import { createLogger } from './core/logger.js';
 import type { AppDependencies } from './core/types.js';
 import { HealthService } from './services/health.service.js';
-import type { DbClientFactory } from './db/client.js';
+import type { DbClient, DbClientFactory } from './db/client.js';
+import { HostAuthController } from './controllers/host-auth.controller.js';
+import { createEmailService } from './services/email.service.js';
+import { Pbkdf2PasswordHasher } from './services/password-hasher.js';
+import { InMemoryRateLimiter } from './services/rate-limiter.js';
+import { HostAuthRepository } from './repositories/host-auth.repository.js';
+import { HostAuthService } from './services/host-auth.service.js';
+import type { EmailService } from './services/email.service.js';
+import type { PasswordHasher } from './services/password-hasher.js';
+import type { RateLimiter } from './services/rate-limiter.js';
 
 export function createContainer(
   config: AppConfig,
   options: {
     databaseClientScope?: 'shared' | 'request';
     createDatabaseClient?: DbClientFactory;
+    emailService?: EmailService;
+    passwordHasher?: PasswordHasher;
+    rateLimiter?: RateLimiter;
   } = {}
 ): AppDependencies {
   const healthService = new HealthService(config);
+  const logger = createLogger();
+  const passwordHasher =
+    options.passwordHasher ?? new Pbkdf2PasswordHasher(config.passwordHashIterations);
+  const emailService = options.emailService ?? createEmailService(config, logger);
+  const rateLimiter = options.rateLimiter ?? new InMemoryRateLimiter();
+  const hostAuthServiceFactory = (client: DbClient) =>
+    new HostAuthService(HostAuthRepository.fromClient(client), {
+      config,
+      passwordHasher,
+      emailService,
+      rateLimiter
+    });
   const databaseClientScope = options.databaseClientScope ?? 'shared';
   const createDatabaseClient = options.createDatabaseClient;
   if (config.databaseUrl && !createDatabaseClient) {
@@ -34,7 +58,9 @@ export function createContainer(
   const dependencies: AppDependencies = {
     config,
     healthController: new HealthController(healthService),
-    logger: createLogger(),
+    hostAuthController: new HostAuthController(config),
+    hostAuthServiceFactory,
+    logger,
     ...(databaseClientProvider === undefined ? {} : { databaseClientProvider }),
     ...(databaseClientScope === 'request'
       ? { closeDatabaseClientAfterRequest: true }
