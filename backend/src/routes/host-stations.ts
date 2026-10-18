@@ -3,10 +3,12 @@ import type { StationController } from '../controllers/station.controller.js';
 import type { VoterController } from '../controllers/voter.controller.js';
 import { requireHost } from '../middleware/require-host.js';
 import type { VotingController } from '../controllers/voting.controller.js';
+import type { AnalyticsController } from '../controllers/analytics.controller.js';
 
 export function createHostStationsRouter(
   controller: StationController,
-  voterController: VoterController
+  voterController: VoterController,
+  analyticsController: AnalyticsController
 ): Router {
   const router = Router();
   router.use(requireHost);
@@ -28,6 +30,11 @@ export function createHostStationsRouter(
   router.patch('/:stationId/voter-cap', controller.voterCap);
   router.post('/:stationId/start-voting', controller.startVoting);
   router.post('/:stationId/cancel', controller.cancel);
+  const analytics = Router({ mergeParams: true });
+  analytics.get('/snapshot', analyticsController.snapshot);
+  analytics.get('/audit', analyticsController.audit);
+  analytics.get('/export.csv', analyticsController.exportCsv);
+  router.use('/:stationId/analytics', analytics);
   const voters = Router({ mergeParams: true });
   voters.get('/', voterController.list);
   voters.post('/bulk-approve', voterController.bulkApprove);

@@ -1,5 +1,14 @@
 import { sql } from 'drizzle-orm';
-import { boolean, check, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  check,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid
+} from 'drizzle-orm/pg-core';
 import { pollingStations } from './polling-stations.js';
 import { HEX64_REGEX } from '@/shared/crypto/hash-formats.js';
 
@@ -21,6 +30,9 @@ export const deviceRecords = pgTable(
       table.pollingStationId,
       table.clientDeviceUuid
     ),
+    index('device_records_station_fingerprint_idx')
+      .on(table.pollingStationId, table.deviceFingerprintHash, table.clientDeviceUuid)
+      .where(sql`${table.hasVoted} = true AND ${table.deviceFingerprintHash} IS NOT NULL`),
     check(
       'device_records_device_fingerprint_hash_format_check',
       sql`${table.deviceFingerprintHash} IS NULL OR ${table.deviceFingerprintHash} ~ ${sql.raw(`'${HEX64_REGEX.source}'`)}`

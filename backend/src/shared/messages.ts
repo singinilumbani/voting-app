@@ -61,6 +61,9 @@ export const MESSAGE_KEYS = Object.freeze({
       wrongMode: 'errors.vote.wrong_mode',
       notConfigured: 'errors.vote.not_configured'
     }),
+    analytics: Object.freeze({
+      notConfigured: 'errors.analytics.not_configured'
+    }),
     validation: 'errors.validation'
   }),
   status: Object.freeze({
@@ -105,6 +108,7 @@ export type MessageKey =
   | (typeof MESSAGE_KEYS.errors.registration)[keyof typeof MESSAGE_KEYS.errors.registration]
   | (typeof MESSAGE_KEYS.errors.voter)[keyof typeof MESSAGE_KEYS.errors.voter]
   | (typeof MESSAGE_KEYS.errors.vote)[keyof typeof MESSAGE_KEYS.errors.vote]
+  | (typeof MESSAGE_KEYS.errors.analytics)[keyof typeof MESSAGE_KEYS.errors.analytics]
   | (typeof MESSAGE_KEYS.status.voter)[keyof typeof MESSAGE_KEYS.status.voter]
   | (typeof MESSAGE_KEYS.status.station)[keyof typeof MESSAGE_KEYS.status.station]
   | (typeof MESSAGE_KEYS.status.hostAuth)[keyof typeof MESSAGE_KEYS.status.hostAuth]

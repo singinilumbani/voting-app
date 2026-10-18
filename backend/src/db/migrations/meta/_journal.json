@@ -36,6 +36,13 @@
       "when": 1792321510716,
       "tag": "0004_clumsy_nighthawk",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792324804277,
+      "tag": "0005_absent_sersi",
+      "breakpoints": true
     }
   ]
 }

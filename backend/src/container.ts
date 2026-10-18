@@ -22,6 +22,10 @@ import { VoterService } from './services/voter.service.js';
 import { VotingController } from './controllers/voting.controller.js';
 import { VotingRepository } from './repositories/voting.repository.js';
 import { VotingService } from './services/voting.service.js';
+import { AnalyticsController } from './controllers/analytics.controller.js';
+import { AnalyticsRepository } from './repositories/analytics.repository.js';
+import { AnalyticsService } from './services/analytics.service.js';
+import { InMemoryAnalyticsSnapshotCache } from './services/analytics.repository.js';
 
 export function createContainer(
   config: AppConfig,
@@ -62,6 +66,9 @@ export function createContainer(
       config,
       failedEntryRateLimiter
     });
+  const analyticsCache = new InMemoryAnalyticsSnapshotCache();
+  const analyticsServiceFactory = (client: DbClient) =>
+    new AnalyticsService(AnalyticsRepository.fromClient(client), analyticsCache);
   const databaseClientScope = options.databaseClientScope ?? 'shared';
   const createDatabaseClient = options.createDatabaseClient;
   if (config.databaseUrl && !createDatabaseClient) {
@@ -87,10 +94,12 @@ export function createContainer(
     stationController: new StationController(),
     voterController: new VoterController(),
     votingController: new VotingController(),
+    analyticsController: new AnalyticsController(),
     hostAuthServiceFactory,
     stationServiceFactory,
     voterServiceFactory,
     votingServiceFactory,
+    analyticsServiceFactory,
     logger,
     ...(databaseClientProvider === undefined ? {} : { databaseClientProvider }),
     ...(databaseClientScope === 'request'

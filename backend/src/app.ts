@@ -12,6 +12,7 @@ import { stationServiceLifecycle } from './middleware/station-service-lifecycle.
 import { createHostStationsRouter, createPublicStationsRouter } from './routes/host-stations.js';
 import { voterServiceLifecycle } from './middleware/voter-service-lifecycle.js';
 import { votingServiceLifecycle } from './middleware/voting-service-lifecycle.js';
+import { analyticsServiceLifecycle } from './middleware/analytics-service-lifecycle.js';
 
 export function createApp(deps: AppDependencies) {
   const app = express();
@@ -26,12 +27,13 @@ export function createApp(deps: AppDependencies) {
   app.use(stationServiceLifecycle(deps.stationServiceFactory));
   app.use(voterServiceLifecycle(deps.voterServiceFactory));
   app.use(votingServiceLifecycle(deps.votingServiceFactory));
+  app.use(analyticsServiceLifecycle(deps.analyticsServiceFactory));
 
   app.get('/api/v1/health', deps.healthController.get);
   app.use('/api/v1/host/auth', createHostAuthRouter(deps.hostAuthController));
   app.use(
     '/api/v1/host/stations',
-    createHostStationsRouter(deps.stationController, deps.voterController)
+    createHostStationsRouter(deps.stationController, deps.voterController, deps.analyticsController)
   );
   app.use(
     '/api/v1/public/stations',

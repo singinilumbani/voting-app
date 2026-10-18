@@ -53,6 +53,9 @@ export const registeredVoters = pgTable(
       table.pollingStationId,
       table.approvalStatus
     ),
+    index('registered_voters_station_voted_at_idx')
+      .on(table.pollingStationId, table.votedAt)
+      .where(sql`${table.hasVoted} = true AND ${table.votedAt} IS NOT NULL`),
     check(
       'registered_voters_token_hash_format_check',
       sql`${table.tokenHash} IS NULL OR ${table.tokenHash} ~ ${sql.raw(`'${HEX64_REGEX.source}'`)}`

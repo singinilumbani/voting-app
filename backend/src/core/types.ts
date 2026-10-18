@@ -10,6 +10,8 @@ import type { VoterController } from '../controllers/voter.controller.js';
 import type { VoterServiceFactory } from '../middleware/voter-service-lifecycle.js';
 import type { VotingController } from '../controllers/voting.controller.js';
 import type { VotingServiceFactory } from '../middleware/voting-service-lifecycle.js';
+import type { AnalyticsController } from '../controllers/analytics.controller.js';
+import type { AnalyticsServiceFactory } from '../middleware/analytics-service-lifecycle.js';
 
 export interface AppDependencies {
   config: AppConfig;
@@ -18,10 +20,12 @@ export interface AppDependencies {
   stationController: StationController;
   voterController: VoterController;
   votingController: VotingController;
+  analyticsController: AnalyticsController;
   hostAuthServiceFactory: HostAuthServiceFactory;
   stationServiceFactory: StationServiceFactory;
   voterServiceFactory: VoterServiceFactory;
   votingServiceFactory: VotingServiceFactory;
+  analyticsServiceFactory: AnalyticsServiceFactory;
   logger: Logger;
   databaseClientProvider?: () => Promise<DbClient>;
   closeDatabaseClientAfterRequest?: boolean;

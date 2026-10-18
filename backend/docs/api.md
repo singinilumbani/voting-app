@@ -343,3 +343,29 @@ Closed Vote ballot rows and the participation marker are committed together in o
 - **Request:** No body.
 - **Response:** `200` with one object per category: `{ "id": UUID, "title": string, "candidates": CandidateDto[], "results": [{ "candidateId": UUID | "ABSTAIN", "count": integer }] }`. Counts are aggregated and sorted; vote insertion order is not read.
 - **Errors:** `403 errors.vote.results_access_required`; `409 errors.vote.results_not_available`; `401 errors.vote.session_invalid|session_expired`; `404 errors.station.not_found`.
+
+## Host analytics API
+
+All analytics endpoints require the authenticated `host_session` cookie and verify that the host owns the requested station. Snapshot aggregates are cached per station for two seconds; station ownership is still checked for every request. Audit events are read only from `registered_voters`; no audit query reads or joins `cast_votes`.
+
+### `GET /api/v1/host/stations/:stationId/analytics/snapshot`
+
+- **Auth:** Required `host_session` cookie; station ownership required.
+- **Request:** No body.
+- **Response:** `200 { "stationId": UUID, "stationName": string, "stationMode": "CLOSED_VOTE" | "PUBLIC_POLL", "status": StationStatus, "state": "WAITING" | "LIVE" | "FINAL", "ballotsCast": integer, "approvedVoters": integer | null, "turnoutPercent": number | null, "possibleDuplicates": integer, "timeRemainingSeconds": integer | null, "categories": [{ "categoryId": UUID, "title": string, "candidates": [{ "candidateId": UUID, "name": string, "imageUrl": URL | null, "count": integer, "percentage": number, "isLeader": boolean, "isTie": boolean }], "abstentions": integer }], "abstentions": integer, "lastUpdated": UTC timestamp }`.
+- **Behavior:** Before `VOTE_OPEN`, `state` is `WAITING` and leaderboard counts are zero. `LIVE` applies during open voting. At `VOTE_CLOSED` or `ARCHIVED`, `state` is `FINAL`. Closed Vote turnout is ballots cast divided by approved voters, expressed as a percentage (zero when no approved voters); Public Poll has null turnout/approved-voter values and reports ballots and possible duplicates as counters. Candidate percentages include abstentions in the category denominator. Ties are flagged only for tied candidates with a nonzero top count.
+- **Errors:** `401 errors.auth.unauthorized`; `404 errors.station.not_found` for missing or unowned stations; `503 errors.analytics.not_configured`.
+
+### `GET /api/v1/host/stations/:stationId/analytics/audit`
+
+- **Auth:** Required `host_session` cookie; station ownership required.
+- **Request:** No body.
+- **Response:** `200 { "events": [{ "voterId": UUID, "fullName": string, "checkedInAt": UTC timestamp }], "limit": 500 }`, newest check-ins first. Only voters with `has_voted` and a non-null `voted_at` are included. The response contains no candidate, category, ballot-choice, or vote data.
+- **Errors:** `401 errors.auth.unauthorized`; `404 errors.station.not_found` for missing or unowned stations; `503 errors.analytics.not_configured`.
+
+### `GET /api/v1/host/stations/:stationId/analytics/export.csv`
+
+- **Auth:** Required `host_session` cookie; station ownership required.
+- **Request:** No body.
+- **Response:** `200 text/csv` with columns `category`, `candidate`, `votes`, `percentage`, `is_leader`, and `is_tie`. Abstentions appear as `ABSTAIN` rows. Spreadsheet formula-leading content is escaped.
+- **Errors:** `401 errors.auth.unauthorized`; `404 errors.station.not_found` for missing or unowned stations; `503 errors.analytics.not_configured`.

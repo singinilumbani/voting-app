@@ -1,0 +1,3 @@
+CREATE INDEX "cast_votes_station_category_candidate_idx" ON "cast_votes" USING btree ("polling_station_id","category_id","candidate_id");--> statement-breakpoint
+CREATE INDEX "device_records_station_fingerprint_idx" ON "device_records" USING btree ("polling_station_id","device_fingerprint_hash","client_device_uuid") WHERE "device_records"."has_voted" = true AND "device_records"."device_fingerprint_hash" IS NOT NULL;--> statement-breakpoint
+CREATE INDEX "registered_voters_station_voted_at_idx" ON "registered_voters" USING btree ("polling_station_id","voted_at") WHERE "registered_voters"."has_voted" = true AND "registered_voters"."voted_at" IS NOT NULL;
