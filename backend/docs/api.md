@@ -261,3 +261,54 @@ The lifecycle scheduler (M10) is responsible for moving scheduled stations into 
 - **Request:** No body; `publicId` is the unguessable public share identifier.
 - **Response:** `200 { "station": { "publicId", "name", "mode", "status", "regStartsAt", "regEndsAt", "voteStartsAt", "voteEndsAt", "mobileOnly", "allowAbstain", "resultsVisibility", "categories"? } }`. `categories` and candidates are included only while the voting window is open.
 - **Errors:** `404 errors.station.not_found`; `503 errors.station.not_configured`.
+
+## Closed Vote registration and approval queue
+
+Registration routes are public and addressed by the station's `publicId`; host queue routes require the `host_session` cookie and verify station ownership. A Closed Vote station accepts registration only while its status is `REG_OPEN`. Reaching the voter cap does not close registration; the M10 scheduler closes it at `reg_ends_at`. Device UUID and fingerprint matches are informational only and never block registration.
+
+### `POST /api/v1/public/stations/:publicId/register`
+
+- **Auth:** None. Registration attempts are rate limited by hashed IP and normalized phone number.
+- **Request:** JSON `{ "fullName": string, "phone": string, "deviceUuid": UUID, "fingerprintHash": string }`.
+- **Response:** `201 { "token": "TK-XXXX-XXXX-XXXX", "status": "PENDING" }`. The token is shown once; only its station-scoped HMAC is stored.
+- **Errors:** `400 errors.validation.failed`; `400 errors.phone.too_short|too_long|not_mobile|spreadsheet_damaged|empty|invalid_characters`; `403 errors.registration.blocked`; `409 errors.registration.closed|already_registered|attempts_exceeded|full`; `429 errors.registration.rate_limited`; `404 errors.station.not_found`; `503 errors.registration.not_configured`.
+- **Retry behavior:** A rejected number may submit corrected details up to three total attempts. The existing voter row is reused and its token hash is replaced. Pending and approved records count toward `voter_cap`; rejection frees a slot.
+
+### `POST /api/v1/public/stations/:publicId/status`
+
+- **Auth:** None. Requests are rate limited by hashed IP; the recommended client polling interval is 30 seconds.
+- **Request:** JSON `{ "token": string }`.
+- **Response:** `200 { "status": "PENDING" | "APPROVED" | "REJECTED" | "REVOKED", "rejectionReason"?: string }`.
+- **Errors:** `400 errors.validation.failed`; `400 errors.token.invalid_length|invalid_characters`; `404 errors.station.not_found|registration.not_found`; `429 errors.registration.rate_limited`; `503 errors.registration.not_configured`.
+
+All endpoints below use the host session cookie and require station ownership. Voter rows and responses never expose stored token hashes.
+
+### `GET /api/v1/host/stations/:stationId/voters`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** Optional query parameters `search` (name or phone), `status` (`PENDING`, `APPROVED`, `REJECTED`, `VOTED`, `REVOKED`), `page` (default 1), and `pageSize` (default 25, maximum 100).
+- **Response:** `200 { "voters": VoterDto[], "counts": { "pending": integer, "approved": integer, "rejected": integer, "revoked": integer, "voted": integer, "cap": integer }, "total": integer, "page": integer, "pageSize": integer }`. Each row includes name, locally formatted phone (international numbers use `+` and E.164 digits), WhatsApp URL, status, rejection reason, blocked flag, registration/approval times, `hasVoted`, and `deviceFlag` (`SAME_DEVICE_AS_N` or null). No ballot choices or tokens are returned.
+- **Errors:** `400 errors.validation.failed`; `401 errors.auth.unauthorized`; `404 errors.station.not_found`.
+
+### Host approval actions
+
+| Method and path | Auth and request | Response | Errors |
+|---|---|---|---|
+| `POST /api/v1/host/stations/:stationId/voters/:voterId/approve` | Host session; no body | `200 { "voterId": UUID, "status": "APPROVED" }` | `404 errors.station.not_found|voter.not_found`; `409 errors.voter.approval_locked|not_pending` |
+| `POST /api/v1/host/stations/:stationId/voters/:voterId/reject` | Host session; optional `{ "reason"?: string }` | `200 { "voterId": UUID, "status": "REJECTED" }` | `400 errors.validation.failed`; `404 errors.station.not_found|voter.not_found`; `409 errors.voter.approval_locked|not_pending` |
+| `POST /api/v1/host/stations/:stationId/voters/bulk-approve` | Host session; `{ "voterIds": UUID[] }` or `{ "allPending": true }` | `200 { "updatedCount": integer }` | `400 errors.validation.failed`; `404 errors.station.not_found`; `409 errors.voter.approval_locked` |
+| `POST /api/v1/host/stations/:stationId/voters/bulk-reject` | Host session; `{ "voterIds": UUID[] }` or `{ "allPending": true, "reason"?: string }` | `200 { "updatedCount": integer }` | `400 errors.validation.failed`; `404 errors.station.not_found`; `409 errors.voter.approval_locked` |
+
+Approval and rejection are allowed while station status is `REG_OPEN` or `REG_CLOSED`; both lock when voting opens. Every changed voter produces a station activity-log event.
+
+### Other voter actions and reports
+
+| Method and path | Auth and request | Response | Errors |
+|---|---|---|---|
+| `POST /api/v1/host/stations/:stationId/voters/:voterId/revoke` | Host session; no body | `200 { "voterId": UUID, "status": "REVOKED" }` | `404 errors.station.not_found|voter.not_found`; `409 errors.voter.action_locked|revoke_not_allowed` |
+| `POST /api/v1/host/stations/:stationId/voters/:voterId/reissue-token` | Host session; no body | `200 { "token": "TK-XXXX-XXXX-XXXX" }`; old token becomes invalid immediately | `404 errors.station.not_found|voter.not_found`; `409 errors.voter.action_locked|reissue_not_allowed`; `503 errors.registration.not_configured` |
+| `POST /api/v1/host/stations/:stationId/voters/:voterId/block-number` | Host session; no body | `204` | `404 errors.station.not_found|voter.not_found` |
+| `GET /api/v1/host/stations/:stationId/voters/integrity` | Host session; no body | `200 { "approvedVoters": integer, "ballotsCast": integer, "abstentions": integer, "alert": boolean }` | `404 errors.station.not_found` |
+| `GET /api/v1/host/stations/:stationId/voters/export.csv` | Host session; no body | `200 text/csv` with only `full_name`, `phone_number`, and `status` columns | `404 errors.station.not_found` |
+
+Revoke and reissue are available through `REG_OPEN`, `REG_CLOSED`, and `VOTE_OPEN` until voting closes. Reissue is limited to pending or approved voters who have not voted; it resets failed-token attempts and lockout state. Revoke is limited to approved voters who have not voted. These actions and block-number each write to the station activity log. `ballotsCast` is counted from registered-voter `has_voted` state and is never joined to `cast_votes`; abstentions are counted separately from null-candidate cast-vote rows.

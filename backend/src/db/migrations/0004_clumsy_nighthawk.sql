@@ -1,0 +1,1 @@
+ALTER TYPE "public"."activity_event" ADD VALUE 'VOTER_BLOCKED';

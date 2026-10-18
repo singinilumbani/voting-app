@@ -25,7 +25,8 @@ export const activityEventEnum = pgEnum('activity_event', [
   'VOTER_APPROVED',
   'VOTER_REJECTED',
   'VOTER_REVOKED',
-  'TOKEN_REISSUED'
+  'TOKEN_REISSUED',
+  'VOTER_BLOCKED'
 ]);
 export const paymentStatusEnum = pgEnum('payment_status', [
   'PENDING',

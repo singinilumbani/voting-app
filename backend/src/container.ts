@@ -16,6 +16,9 @@ import type { RateLimiter } from './services/rate-limiter.js';
 import { StationController } from './controllers/station.controller.js';
 import { StationRepository } from './repositories/station.repository.js';
 import { StationService } from './services/station.service.js';
+import { VoterController } from './controllers/voter.controller.js';
+import { VoterRepository } from './repositories/voter.repository.js';
+import { VoterService } from './services/voter.service.js';
 
 export function createContainer(
   config: AppConfig,
@@ -42,6 +45,14 @@ export function createContainer(
     });
   const stationServiceFactory = (client: DbClient) =>
     new StationService(StationRepository.fromClient(client), { config });
+  const registrationRateLimiter = new InMemoryRateLimiter(30, 60_000);
+  const statusRateLimiter = new InMemoryRateLimiter(40, 60_000);
+  const voterServiceFactory = (client: DbClient) =>
+    new VoterService(VoterRepository.fromClient(client), {
+      config,
+      registrationRateLimiter,
+      statusRateLimiter
+    });
   const databaseClientScope = options.databaseClientScope ?? 'shared';
   const createDatabaseClient = options.createDatabaseClient;
   if (config.databaseUrl && !createDatabaseClient) {
@@ -65,8 +76,10 @@ export function createContainer(
     healthController: new HealthController(healthService),
     hostAuthController: new HostAuthController(config),
     stationController: new StationController(),
+    voterController: new VoterController(),
     hostAuthServiceFactory,
     stationServiceFactory,
+    voterServiceFactory,
     logger,
     ...(databaseClientProvider === undefined ? {} : { databaseClientProvider }),
     ...(databaseClientScope === 'request'

@@ -6,14 +6,18 @@ import type { HostAuthController } from '../controllers/host-auth.controller.js'
 import type { HostAuthServiceFactory } from '../middleware/host-auth-service-lifecycle.js';
 import type { StationController } from '../controllers/station.controller.js';
 import type { StationServiceFactory } from '../middleware/station-service-lifecycle.js';
+import type { VoterController } from '../controllers/voter.controller.js';
+import type { VoterServiceFactory } from '../middleware/voter-service-lifecycle.js';
 
 export interface AppDependencies {
   config: AppConfig;
   healthController: HealthController;
   hostAuthController: HostAuthController;
   stationController: StationController;
+  voterController: VoterController;
   hostAuthServiceFactory: HostAuthServiceFactory;
   stationServiceFactory: StationServiceFactory;
+  voterServiceFactory: VoterServiceFactory;
   logger: Logger;
   databaseClientProvider?: () => Promise<DbClient>;
   closeDatabaseClientAfterRequest?: boolean;

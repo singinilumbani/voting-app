@@ -23,6 +23,26 @@ export const MESSAGE_KEYS = Object.freeze({
       currentPasswordInvalid: 'errors.host_auth.current_password_invalid',
       accountDeletionConfirmationRequired: 'errors.host_auth.account_deletion_confirmation_required'
     }),
+    registration: Object.freeze({
+      alreadyRegistered: 'errors.registration.already_registered',
+      full: 'errors.registration.full',
+      closed: 'errors.registration.closed',
+      attemptsExceeded: 'errors.registration.attempts_exceeded',
+      blocked: 'errors.registration.blocked',
+      rateLimited: 'errors.registration.rate_limited',
+      tokenGenerationFailed: 'errors.registration.token_generation_failed',
+      createFailed: 'errors.registration.create_failed',
+      notConfigured: 'errors.registration.not_configured',
+      notFound: 'errors.registration.not_found'
+    }),
+    voter: Object.freeze({
+      notFound: 'errors.voter.not_found',
+      notPending: 'errors.voter.not_pending',
+      approvalLocked: 'errors.voter.approval_locked',
+      actionLocked: 'errors.voter.action_locked',
+      revokeNotAllowed: 'errors.voter.revoke_not_allowed',
+      reissueNotAllowed: 'errors.voter.reissue_not_allowed'
+    }),
     validation: 'errors.validation'
   }),
   status: Object.freeze({
@@ -56,6 +76,8 @@ export type MessageKey =
   | (typeof MESSAGE_KEYS.errors.token)[keyof typeof MESSAGE_KEYS.errors.token]
   | typeof MESSAGE_KEYS.errors.validation
   | (typeof MESSAGE_KEYS.errors.hostAuth)[keyof typeof MESSAGE_KEYS.errors.hostAuth]
+  | (typeof MESSAGE_KEYS.errors.registration)[keyof typeof MESSAGE_KEYS.errors.registration]
+  | (typeof MESSAGE_KEYS.errors.voter)[keyof typeof MESSAGE_KEYS.errors.voter]
   | (typeof MESSAGE_KEYS.status.voter)[keyof typeof MESSAGE_KEYS.status.voter]
   | (typeof MESSAGE_KEYS.status.station)[keyof typeof MESSAGE_KEYS.status.station]
   | (typeof MESSAGE_KEYS.status.hostAuth)[keyof typeof MESSAGE_KEYS.status.hostAuth];

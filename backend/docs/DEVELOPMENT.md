@@ -68,6 +68,10 @@ See [runtime-spike.md](./runtime-spike.md) for the local Node measurement and it
 
 TEMPORARY host accounts receive an initial `purge_at` seven days after signup or tier downgrade. A later election lifecycle must update that deadline to seven days after election completion, as required by the retention specification.
 
+## Closed Vote registration
+
+Set `TOKEN_HMAC_SECRET` to a private random value of at least 32 characters before enabling public registration. The API uses it to HMAC-scope voter tokens, hashed IP addresses, and device fingerprints; it must never be logged or committed. The public registration/status and host approval-queue routes live under `/api/v1/public/stations` and `/api/v1/host/stations/:stationId/voters`. Registration and status polling use in-memory rate limiters in this beta implementation; production needs the distributed Workers limiter planned for M11.
+
 ## Build and quality checks
 
 ```sh
