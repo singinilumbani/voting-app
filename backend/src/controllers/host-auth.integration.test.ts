@@ -27,7 +27,9 @@ describe.skipIf(process.env.DATABASE_URL === undefined)('host authentication HTT
       ...process.env,
       APP_ENV: 'test',
       PASSWORD_HASH_ITERATIONS: '1000',
-      ENABLE_EMAIL_VERIFICATION: 'false'
+      ENABLE_EMAIL_VERIFICATION: 'false',
+      APP_BASE_URL: 'https://app.example.test',
+      COOKIE_DOMAIN: '.example.test'
     });
     const app = createAuthApp(config, client, mailer);
     const signup = await request(app).post('/api/v1/host/auth/signup').send({
@@ -42,6 +44,7 @@ describe.skipIf(process.env.DATABASE_URL === undefined)('host authentication HTT
     expect(signup.body).toEqual({ accountType: 'LONG_TERM' });
     const setCookieHeader = signup.headers['set-cookie']?.[0];
     expect(setCookieHeader).toContain('HttpOnly; Secure; SameSite=Lax');
+    expect(setCookieHeader).toContain('Domain=.example.test');
     if (!setCookieHeader) {
       throw new Error('Signup did not issue the host session cookie');
     }
@@ -74,9 +77,9 @@ describe.skipIf(process.env.DATABASE_URL === undefined)('host authentication HTT
         termsAccepted: true
       }
     ]) {
-      expect((await request(app).post('/api/v1/host/auth/signup').send(duplicate)).status).toBe(
-        409
-      );
+      const duplicateResponse = await request(app).post('/api/v1/host/auth/signup').send(duplicate);
+      expect(duplicateResponse.status).toBe(409);
+      expect(duplicateResponse.body.error.key).toBe('errors.host_auth.account_conflict');
     }
 
     const wrongPassword = await request(app)

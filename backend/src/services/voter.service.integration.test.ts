@@ -56,7 +56,8 @@ describe.skipIf(process.env.DATABASE_URL === undefined)(
 
       const service = new VoterService(VoterRepository.fromClient(client), {
         config: { tokenHmacSecret },
-        registrationRateLimiter: allowAll,
+        registrationIpRateLimiter: allowAll,
+        registrationPhoneRateLimiter: allowAll,
         statusRateLimiter: allowAll,
         tokenGenerator: () =>
           `TK-${randomUUID().replaceAll('-', '').slice(0, 4).toUpperCase()}-2222-3333`

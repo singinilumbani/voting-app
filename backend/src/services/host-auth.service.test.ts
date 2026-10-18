@@ -50,10 +50,10 @@ describe('HostAuthService', () => {
 
     await expect(
       context.service.signup({ ...validSignup, email: 'another@example.test' })
-    ).rejects.toMatchObject({ key: 'errors.host_auth.username_taken' });
+    ).rejects.toMatchObject({ key: 'errors.host_auth.account_conflict' });
     await expect(
       context.service.signup({ ...validSignup, username: 'anotherhost' })
-    ).rejects.toMatchObject({ key: 'errors.host_auth.email_taken' });
+    ).rejects.toMatchObject({ key: 'errors.host_auth.account_conflict' });
   });
 
   it('uses the same login failure message for an unknown username and a wrong password', async () => {

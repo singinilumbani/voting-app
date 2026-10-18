@@ -3,6 +3,7 @@ import { AppError, ConflictError, UnauthorizedError } from '../core/app-error.js
 import {
   base64urlDecode,
   base64urlEncode,
+  constantTimeEqual,
   MESSAGE_KEYS,
   randomBytes,
   sha256Hex
@@ -67,11 +68,11 @@ export class HostAuthService {
       created = await this.repository.withTransaction(async (repository) => {
         const existingUsername = await repository.findUserByUsername(username);
         if (existingUsername) {
-          throw new ConflictError(MESSAGE_KEYS.errors.hostAuth.usernameTaken);
+          throw new ConflictError(MESSAGE_KEYS.errors.hostAuth.accountConflict);
         }
         const existingEmail = await repository.findUserByEmail(email);
         if (existingEmail) {
-          throw new ConflictError(MESSAGE_KEYS.errors.hostAuth.emailTaken);
+          throw new ConflictError(MESSAGE_KEYS.errors.hostAuth.accountConflict);
         }
 
         const user = await repository.createUser({
@@ -115,8 +116,8 @@ export class HostAuthService {
 
   async login(username: string, password: string, ip: string): Promise<LoginResult> {
     const canonicalUsername = username.trim().toLowerCase();
-    const ipAllowed = this.dependencies.rateLimiter.consume(`login:ip:${ip}`);
-    const usernameAllowed = this.dependencies.rateLimiter.consume(
+    const ipAllowed = await this.dependencies.rateLimiter.consume(`login:ip:${ip}`);
+    const usernameAllowed = await this.dependencies.rateLimiter.consume(
       `login:username:${canonicalUsername}`
     );
     if (!ipAllowed || !usernameAllowed) {
@@ -163,7 +164,7 @@ export class HostAuthService {
     }
     const sessionHash = await sha256Hex(sessionToken);
     const record = await this.repository.findSessionWithUser(sessionHash, this.now());
-    if (!record) {
+    if (!record || !constantTimeEqual(record.session.tokenHash, sessionHash)) {
       return undefined;
     }
     return { host: toHostProfile(record.user), sessionId: record.session.id };
@@ -181,8 +182,10 @@ export class HostAuthService {
 
   async forgotPassword(email: string, ip: string): Promise<void> {
     const normalizedEmail = email.trim().toLowerCase();
-    const ipAllowed = this.dependencies.rateLimiter.consume(`forgot:ip:${ip}`);
-    const emailAllowed = this.dependencies.rateLimiter.consume(`forgot:email:${normalizedEmail}`);
+    const ipAllowed = await this.dependencies.rateLimiter.consume(`forgot:ip:${ip}`);
+    const emailAllowed = await this.dependencies.rateLimiter.consume(
+      `forgot:email:${normalizedEmail}`
+    );
     if (!ipAllowed || !emailAllowed) {
       throw new AppError(MESSAGE_KEYS.errors.hostAuth.rateLimited, 429);
     }
@@ -222,7 +225,7 @@ export class HostAuthService {
     const now = this.now();
     const reset = await this.repository.withTransaction(async (repository) => {
       const record = await repository.findUsableResetToken(tokenHash, now);
-      if (!record) {
+      if (!record || !constantTimeEqual(record.tokenHash, tokenHash)) {
         return false;
       }
       const marked = await repository.markResetTokenUsed(record.id, now);
@@ -251,7 +254,11 @@ export class HostAuthService {
     const now = this.now();
     const verified = await this.repository.withTransaction(async (repository) => {
       const record = await repository.findVerificationTokenWithUser(tokenHash, now);
-      if (!record || !(await repository.markVerificationTokenUsed(record.token.id, now))) {
+      if (
+        !record ||
+        !constantTimeEqual(record.token.tokenHash, tokenHash) ||
+        !(await repository.markVerificationTokenUsed(record.token.id, now))
+      ) {
         return false;
       }
       const user = await repository.updateUser(record.user.id, { emailVerifiedAt: now });
@@ -278,12 +285,12 @@ export class HostAuthService {
     };
     if (updates.username !== undefined && updates.username !== current.username) {
       if (await this.repository.findUserByUsername(updates.username)) {
-        throw new ConflictError(MESSAGE_KEYS.errors.hostAuth.usernameTaken);
+        throw new ConflictError(MESSAGE_KEYS.errors.hostAuth.accountConflict);
       }
     }
     if (updates.email !== undefined && updates.email !== current.email) {
       if (await this.repository.findUserByEmail(updates.email)) {
-        throw new ConflictError(MESSAGE_KEYS.errors.hostAuth.emailTaken);
+        throw new ConflictError(MESSAGE_KEYS.errors.hostAuth.accountConflict);
       }
     }
     const emailChanged = updates.email !== undefined && updates.email !== current.email;
@@ -438,7 +445,9 @@ function addDays(date: Date, days: number): Date {
 function decodeOpaqueToken(token: string): Uint8Array | undefined {
   try {
     const bytes = base64urlDecode(token);
-    return bytes.length === 32 && base64urlEncode(bytes) === token ? bytes : undefined;
+    return bytes.length === 32 && constantTimeEqual(base64urlEncode(bytes), token)
+      ? bytes
+      : undefined;
   } catch (error) {
     if (error instanceof TypeError) {
       return undefined;
@@ -475,11 +484,8 @@ function mapUniqueConflict(error: unknown): unknown {
   }
   const candidate = error as { constraint?: unknown; cause?: { constraint?: unknown } };
   const constraint = candidate.constraint ?? candidate.cause?.constraint;
-  if (constraint === 'users_username_unique') {
-    return new ConflictError(MESSAGE_KEYS.errors.hostAuth.usernameTaken);
-  }
-  if (constraint === 'users_email_unique') {
-    return new ConflictError(MESSAGE_KEYS.errors.hostAuth.emailTaken);
+  if (constraint === 'users_username_unique' || constraint === 'users_email_unique') {
+    return new ConflictError(MESSAGE_KEYS.errors.hostAuth.accountConflict);
   }
   return error;
 }

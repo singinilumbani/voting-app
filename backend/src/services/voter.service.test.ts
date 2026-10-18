@@ -141,6 +141,18 @@ describe('VoterService', () => {
     ).rejects.toMatchObject({ key: 'errors.registration.rate_limited' });
   });
 
+  it('applies separate IP and phone registration limits', async () => {
+    const ipLimited = createContext({ registrationIpRateLimited: true });
+    await expect(
+      ipLimited.service.register(publicId, registration('0991234567'))
+    ).rejects.toMatchObject({ key: 'errors.registration.rate_limited' });
+
+    const phoneLimited = createContext({ registrationPhoneRateLimited: true });
+    await expect(
+      phoneLimited.service.register(publicId, registration('0991234567'))
+    ).rejects.toMatchObject({ key: 'errors.registration.rate_limited' });
+  });
+
   it('flags other registrations that share a device without blocking them', async () => {
     const context = createContext();
     context.addVoter({
@@ -224,6 +236,8 @@ function createContext(
     status?: VoterStationRecord['status'];
     tokens?: string[];
     statusRateLimited?: boolean;
+    registrationIpRateLimited?: boolean;
+    registrationPhoneRateLimited?: boolean;
   } = {}
 ) {
   const station: VoterStationRecord = {
@@ -326,7 +340,12 @@ function createContext(
   };
   const service = new VoterService(repository, {
     config: { tokenHmacSecret: tokenSecret },
-    registrationRateLimiter: alwaysAllowed,
+    registrationIpRateLimiter: options.registrationIpRateLimited
+      ? { consume: () => false }
+      : alwaysAllowed,
+    registrationPhoneRateLimiter: options.registrationPhoneRateLimited
+      ? { consume: () => false }
+      : alwaysAllowed,
     statusRateLimiter: options.statusRateLimited ? { consume: () => false } : alwaysAllowed,
     now: () => now,
     tokenGenerator: () => {

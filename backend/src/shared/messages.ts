@@ -13,6 +13,7 @@ export const MESSAGE_KEYS = Object.freeze({
       invalidCharacters: 'errors.token.invalid_characters'
     }),
     hostAuth: Object.freeze({
+      accountConflict: 'errors.host_auth.account_conflict',
       usernameTaken: 'errors.host_auth.username_taken',
       emailTaken: 'errors.host_auth.email_taken',
       invalidCredentials: 'errors.host_auth.invalid_credentials',
@@ -55,6 +56,7 @@ export const MESSAGE_KEYS = Object.freeze({
       abstainNotAllowed: 'errors.vote.abstain_not_allowed',
       duplicateDevice: 'errors.vote.duplicate_device',
       capacityReached: 'errors.vote.capacity_reached',
+      rateLimited: 'errors.vote.rate_limited',
       resultsNotAvailable: 'errors.vote.results_not_available',
       resultsAccessRequired: 'errors.vote.results_access_required',
       notOpen: 'errors.vote.not_open',
@@ -63,6 +65,11 @@ export const MESSAGE_KEYS = Object.freeze({
     }),
     analytics: Object.freeze({
       notConfigured: 'errors.analytics.not_configured'
+    }),
+    request: Object.freeze({
+      bodyTooLarge: 'errors.request.body_too_large',
+      bodyInvalid: 'errors.request.body_invalid',
+      timeout: 'errors.request.timeout'
     }),
     validation: 'errors.validation'
   }),
@@ -109,6 +116,7 @@ export type MessageKey =
   | (typeof MESSAGE_KEYS.errors.voter)[keyof typeof MESSAGE_KEYS.errors.voter]
   | (typeof MESSAGE_KEYS.errors.vote)[keyof typeof MESSAGE_KEYS.errors.vote]
   | (typeof MESSAGE_KEYS.errors.analytics)[keyof typeof MESSAGE_KEYS.errors.analytics]
+  | (typeof MESSAGE_KEYS.errors.request)[keyof typeof MESSAGE_KEYS.errors.request]
   | (typeof MESSAGE_KEYS.status.voter)[keyof typeof MESSAGE_KEYS.status.voter]
   | (typeof MESSAGE_KEYS.status.station)[keyof typeof MESSAGE_KEYS.status.station]
   | (typeof MESSAGE_KEYS.status.hostAuth)[keyof typeof MESSAGE_KEYS.status.hostAuth]

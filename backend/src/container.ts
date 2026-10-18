@@ -7,7 +7,12 @@ import type { DbClient, DbClientFactory } from './db/client.js';
 import { HostAuthController } from './controllers/host-auth.controller.js';
 import { createEmailService } from './services/email.service.js';
 import { Pbkdf2PasswordHasher } from './services/password-hasher.js';
-import { InMemoryRateLimiter } from './services/rate-limiter.js';
+import {
+  CloudflareRateLimiter,
+  DatabaseRateLimiter,
+  type CloudflareRateLimitBinding
+} from './services/rate-limiter.js';
+import { RateLimitRepository } from './repositories/rate-limit.repository.js';
 import { HostAuthRepository } from './repositories/host-auth.repository.js';
 import { HostAuthService } from './services/host-auth.service.js';
 import type { EmailService } from './services/email.service.js';
@@ -35,6 +40,10 @@ export function createContainer(
     emailService?: EmailService;
     passwordHasher?: PasswordHasher;
     rateLimiter?: RateLimiter;
+    rateLimitBindings?: {
+      strict?: CloudflareRateLimitBinding;
+      loose?: CloudflareRateLimitBinding;
+    };
   } = {}
 ): AppDependencies {
   const healthService = new HealthService(config);
@@ -42,29 +51,53 @@ export function createContainer(
   const passwordHasher =
     options.passwordHasher ?? new Pbkdf2PasswordHasher(config.passwordHashIterations);
   const emailService = options.emailService ?? createEmailService(config, logger);
-  const rateLimiter = options.rateLimiter ?? new InMemoryRateLimiter();
+  const createRateLimiter = (
+    client: DbClient,
+    policy: 'strict' | 'loose',
+    namespace: string,
+    limit: number,
+    windowMs: number
+  ): RateLimiter => {
+    const secret = config.tokenHmacSecret;
+    if (!secret) {
+      return {
+        consume() {
+          throw new Error('TOKEN_HMAC_SECRET is required for rate limiting');
+        }
+      };
+    }
+    const binding = options.rateLimitBindings?.[policy];
+    if (binding) return new CloudflareRateLimiter(binding, secret, namespace);
+    return new DatabaseRateLimiter(RateLimitRepository.fromClient(client), secret, limit, windowMs);
+  };
   const hostAuthServiceFactory = (client: DbClient) =>
     new HostAuthService(HostAuthRepository.fromClient(client), {
       config,
       passwordHasher,
       emailService,
-      rateLimiter
+      rateLimiter:
+        options.rateLimiter ?? createRateLimiter(client, 'strict', 'host-auth', 5, 15 * 60 * 1000)
     });
   const stationServiceFactory = (client: DbClient) =>
     new StationService(StationRepository.fromClient(client), { config });
-  const registrationRateLimiter = new InMemoryRateLimiter(30, 60_000);
-  const statusRateLimiter = new InMemoryRateLimiter(40, 60_000);
   const voterServiceFactory = (client: DbClient) =>
     new VoterService(VoterRepository.fromClient(client), {
       config,
-      registrationRateLimiter,
-      statusRateLimiter
+      registrationIpRateLimiter: createRateLimiter(client, 'loose', 'registration-ip', 30, 60_000),
+      registrationPhoneRateLimiter: createRateLimiter(
+        client,
+        'strict',
+        'registration-phone',
+        5,
+        15 * 60_000
+      ),
+      statusRateLimiter: createRateLimiter(client, 'loose', 'status-ip', 40, 60_000)
     });
-  const failedEntryRateLimiter = new InMemoryRateLimiter(20, 60_000);
   const votingServiceFactory = (client: DbClient) =>
     new VotingService(VotingRepository.fromClient(client), {
       config,
-      failedEntryRateLimiter
+      ipRateLimiter: createRateLimiter(client, 'loose', 'voting-ip', 20, 60_000),
+      phoneRateLimiter: createRateLimiter(client, 'strict', 'voting-phone', 5, 15 * 60_000)
     });
   const analyticsCache = new InMemoryAnalyticsSnapshotCache();
   const analyticsServiceFactory = (client: DbClient) =>
@@ -101,6 +134,7 @@ export function createContainer(
     votingServiceFactory,
     analyticsServiceFactory,
     logger,
+    requestTimeoutMs: 30_000,
     ...(databaseClientProvider === undefined ? {} : { databaseClientProvider }),
     ...(databaseClientScope === 'request'
       ? { closeDatabaseClientAfterRequest: true }

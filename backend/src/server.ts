@@ -10,6 +10,8 @@ const app = createApp(dependencies);
 const server = app.listen(config.port, '0.0.0.0', () => {
   console.info(`Backend listening on port ${config.port}`);
 });
+server.requestTimeout = 30_000;
+server.headersTimeout = 35_000;
 
 async function shutdown(): Promise<void> {
   await new Promise<void>((resolve, reject) => {

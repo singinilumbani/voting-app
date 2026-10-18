@@ -21,6 +21,7 @@ const testTables = [
   'cast_votes',
   'device_records',
   'registered_voters',
+  'rate_limit_counters',
   'candidates',
   'categories',
   'polling_stations',

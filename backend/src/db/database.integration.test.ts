@@ -7,6 +7,7 @@ import {
   PASSWORD_HASH_REGEX
 } from '@/shared/crypto/hash-formats.js';
 import type { DbClient } from './client.js';
+import { RateLimitRepository } from '../repositories/rate-limit.repository.js';
 import { createTestDatabase, truncateTestDatabase } from './test-helpers.js';
 import { deviceRecords } from './schema/device-records.js';
 import { passwordResetTokens } from './schema/password-reset-tokens.js';
@@ -87,6 +88,23 @@ describe.skipIf(process.env.DATABASE_URL === undefined)('PostgreSQL schema const
     expect(indexes.rows.map((index) => index.indexdef).join('\n')).not.toMatch(
       /UNIQUE.*polling_station_id.*voter_id/iu
     );
+  });
+
+  it('atomically increments and expires shared rate-limit counters', async () => {
+    const repository = RateLimitRepository.fromClient(client);
+    const now = new Date('2026-10-18T12:00:00.000Z');
+    const expiresAt = new Date(now.getTime() + 60_000);
+    const keyHash = 'a'.repeat(64);
+    const counts = await Promise.all(
+      Array.from({ length: 20 }, () => repository.incrementWithinWindow(keyHash, now, expiresAt))
+    );
+
+    expect(counts.sort((left, right) => left - right)).toEqual(
+      Array.from({ length: 20 }, (_value, index) => index + 1)
+    );
+    const nextExpiry = new Date(expiresAt.getTime() + 60_000);
+    expect(await repository.incrementWithinWindow(keyHash, expiresAt, nextExpiry)).toBe(1);
+    expect(await repository.deleteExpired(nextExpiry, 100)).toBe(1);
   });
 
   it('enforces phone uniqueness per station', async () => {

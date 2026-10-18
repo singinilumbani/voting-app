@@ -85,7 +85,8 @@ describe.skipIf(process.env.DATABASE_URL === undefined)('voting PostgreSQL concu
         sessionSecret,
         publicPollBallotCeiling: 2500
       },
-      failedEntryRateLimiter: allowAll
+      ipRateLimiter: allowAll,
+      phoneRateLimiter: allowAll
     });
     const entry = await service.enter(publicId, rawToken, undefined, '192.0.2.10');
     if (entry.alreadyVoted) throw new Error('Expected active ballot session');

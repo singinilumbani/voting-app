@@ -12,7 +12,11 @@ const config = loadConfig(env);
 const app = createApp(
   createContainer(config, {
     databaseClientScope: 'request',
-    createDatabaseClient: createNeonDbClient
+    createDatabaseClient: createNeonDbClient,
+    rateLimitBindings: {
+      strict: env.STRICT_RATE_LIMITER,
+      loose: env.LOOSE_RATE_LIMITER
+    }
   })
 );
 

@@ -4,6 +4,7 @@ import {
   hashFingerprint,
   hashIp,
   hashToken,
+  constantTimeEqual,
   generateVoterToken,
   normalizePhone,
   normalizeTokenInput
@@ -28,7 +29,8 @@ const phoneErrorKeys = {
 
 export interface VoterServiceDependencies {
   config: Pick<AppConfig, 'tokenHmacSecret'>;
-  registrationRateLimiter: RateLimiter;
+  registrationIpRateLimiter: RateLimiter;
+  registrationPhoneRateLimiter: RateLimiter;
   statusRateLimiter: RateLimiter;
   now?: () => Date;
   tokenGenerator?: () => string;
@@ -77,17 +79,21 @@ export class VoterService {
   }
 
   async register(publicId: string, input: RegistrationInput) {
+    const secret = this.secret();
+    const ipHash = await hashIp(secret, input.ip);
+    if (!(await this.dependencies.registrationIpRateLimiter.consume(`register:ip:${ipHash}`))) {
+      throw new AppError('errors.registration.rate_limited', 429);
+    }
     const normalizedPhone = normalizePhone(input.phone);
     if (!normalizedPhone.ok) {
       throw new AppError(phoneErrorKeys[normalizedPhone.reason], 400);
     }
-    const secret = this.secret();
-    const ipHash = await hashIp(secret, input.ip);
-    if (!this.dependencies.registrationRateLimiter.consume(`register:ip:${ipHash}`)) {
-      throw new AppError('errors.registration.rate_limited', 429);
-    }
     const phoneRateKey = await hashToken(secret, publicId, normalizedPhone.canonical);
-    if (!this.dependencies.registrationRateLimiter.consume(`register:phone:${phoneRateKey}`)) {
+    if (
+      !(await this.dependencies.registrationPhoneRateLimiter.consume(
+        `register:phone:${phoneRateKey}`
+      ))
+    ) {
       throw new AppError('errors.registration.rate_limited', 429);
     }
 
@@ -152,7 +158,7 @@ export class VoterService {
   async status(publicId: string, token: string, ip: string) {
     const secret = this.secret();
     const ipHash = await hashIp(secret, ip);
-    if (!this.dependencies.statusRateLimiter.consume(`status:ip:${ipHash}`)) {
+    if (!(await this.dependencies.statusRateLimiter.consume(`status:ip:${ipHash}`))) {
       throw new AppError('errors.registration.rate_limited', 429);
     }
     const station = await this.repository.findPublicStation(publicId);
@@ -170,7 +176,7 @@ export class VoterService {
     }
     const tokenHash = await hashToken(secret, station.id, normalizedToken.normalized);
     const voter = await this.repository.findByTokenHash(station.id, tokenHash);
-    if (!voter) {
+    if (!voter || !constantTimeEqual(voter.tokenHash ?? '0'.repeat(64), tokenHash)) {
       throw new NotFoundError('errors.registration.not_found');
     }
     return {

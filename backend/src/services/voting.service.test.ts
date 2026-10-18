@@ -114,6 +114,44 @@ describe('VotingService', () => {
     expect(context.voter.flagReason).toBe('flags.voter.token_attempts_exceeded');
   });
 
+  it('limits token entry by IP and Closed Vote submissions by voter', async () => {
+    const token = generateVoterToken();
+    const entryLimited = await createContext({
+      token,
+      mode: 'CLOSED_VOTE',
+      ipRateLimited: true
+    });
+    await expect(
+      entryLimited.service.enter(publicId, token, undefined, '192.0.2.1')
+    ).rejects.toMatchObject({ key: 'errors.vote.rate_limited' });
+
+    const submitLimited = await createContext({
+      token,
+      mode: 'CLOSED_VOTE',
+      phoneRateLimited: true
+    });
+    const entry = await submitLimited.service.enter(publicId, token, undefined, '192.0.2.1');
+    if (entry.alreadyVoted) throw new Error('Expected an active ballot session');
+    await expect(
+      submitLimited.service.submitClosed(publicId, entry.ballotSession, [
+        { categoryId, candidateId }
+      ])
+    ).rejects.toMatchObject({ key: 'errors.vote.rate_limited' });
+
+    const publicSubmitLimited = await createContext({
+      mode: 'PUBLIC_POLL',
+      ipRateLimited: true
+    });
+    await expect(
+      publicSubmitLimited.service.submitPublic(
+        publicId,
+        [{ categoryId, candidateId }],
+        deviceUuid,
+        'fingerprint'
+      )
+    ).rejects.toMatchObject({ key: 'errors.vote.rate_limited' });
+  });
+
   it('does not include a supplied voter token in authentication errors', async () => {
     const suppliedToken = generateVoterToken();
     const context = await createContext({ mode: 'CLOSED_VOTE' });
@@ -260,6 +298,8 @@ async function createContext(
     status?: VotingStation['status'];
     visibility?: VotingStation['resultsVisibility'];
     allowAbstain?: boolean;
+    ipRateLimited?: boolean;
+    phoneRateLimited?: boolean;
     approvalStatus?: VotingVoter['approvalStatus'];
     ceiling?: number;
   } = {}
@@ -409,7 +449,8 @@ async function createContext(
         sessionSecret,
         publicPollBallotCeiling: options.ceiling ?? 2500
       },
-      failedEntryRateLimiter: alwaysAllowed,
+      ipRateLimiter: options.ipRateLimited ? { consume: () => false } : alwaysAllowed,
+      phoneRateLimiter: options.phoneRateLimited ? { consume: () => false } : alwaysAllowed,
       now
     });
   return { service: createService(), createService, voter, votes };

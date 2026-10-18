@@ -61,17 +61,23 @@ export class VotingController {
             param(request, 'publicId'),
             input.selections,
             input.deviceUuid,
-            input.fingerprintHash
+            input.fingerprintHash,
+            request.ip ?? 'unknown'
           )
         );
       return;
     }
+    const service = this.serviceFor(response);
     const session = bearerToken(request.headers.authorization);
-    if (!session) throw new AppError('errors.vote.session_invalid', 401);
-    const result = await this.serviceFor(response).submitClosed(
+    if (!session) {
+      await service.rateLimitSubmitIp(request.ip ?? 'unknown');
+      throw new AppError('errors.vote.session_invalid', 401);
+    }
+    const result = await service.submitClosed(
       param(request, 'publicId'),
       session,
-      input.selections
+      input.selections,
+      request.ip ?? 'unknown'
     );
     if (result.alreadyVoted) {
       response.status(409).json({

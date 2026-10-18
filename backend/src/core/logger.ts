@@ -5,7 +5,7 @@ export interface Logger {
 }
 
 const sensitiveField =
-  /authorization|cookie|token|password|secret|phone|name|ip|fingerprint|device/i;
+  /authorization|cookie|token|password|secret|phone|name|email|ip|fingerprint|device|session/i;
 
 function redact(value: unknown, key = ''): unknown {
   if (sensitiveField.test(key)) {

@@ -26,7 +26,8 @@ export interface VotingSelection {
 
 export interface VotingServiceDependencies {
   config: Pick<AppConfig, 'tokenHmacSecret' | 'sessionSecret' | 'publicPollBallotCeiling'>;
-  failedEntryRateLimiter: RateLimiter;
+  ipRateLimiter: RateLimiter;
+  phoneRateLimiter: RateLimiter;
   now?: () => Date;
 }
 
@@ -43,6 +44,10 @@ export class VotingService {
   }
 
   async enter(publicId: string, token: string, phone: string | undefined, ip: string) {
+    const ipKey = await hmacHex(this.tokenSecret(), `vote-entry-ip:${ip}`);
+    if (!(await this.dependencies.ipRateLimiter.consume(`vote:enter:ip:${ipKey}`))) {
+      throw new AppError('errors.vote.rate_limited', 429);
+    }
     const station = await this.requireStation(publicId);
     this.requireModeAndOpen(station, 'CLOSED_VOTE');
     let normalizedPhone: string | undefined;
@@ -69,11 +74,7 @@ export class VotingService {
           if (await this.recordWrongPhoneAttempt(station.id, voter)) {
             throw new AppError('errors.vote.token_locked', 423);
           }
-        } else {
-          await this.consumeIpLimit(ip);
         }
-      } else {
-        await this.consumeIpLimit(ip);
       }
       throw new AppError('errors.vote.invalid_token', 401);
     }
@@ -101,8 +102,7 @@ export class VotingService {
       voter = phoneVoter;
     } else {
       voter = await this.repository.findVoterByTokenHash(station.id, candidateHash);
-      if (!voter) {
-        await this.consumeIpLimit(ip);
+      if (!voter || !constantTimeEqual(voter.tokenHash ?? '0'.repeat(64), candidateHash)) {
         throw new AppError('errors.vote.invalid_token', 401);
       }
     }
@@ -144,7 +144,13 @@ export class VotingService {
     };
   }
 
-  async submitClosed(publicId: string, ballotSession: string, selections: VotingSelection[]) {
+  async submitClosed(
+    publicId: string,
+    ballotSession: string,
+    selections: VotingSelection[],
+    ip = 'unknown'
+  ) {
+    await this.rateLimitSubmitIp(ip);
     const payload = await this.verifyPayload(ballotSession, 'ballot');
     const station = await this.requireStation(publicId);
     this.requireModeAndOpen(station, 'CLOSED_VOTE');
@@ -152,6 +158,13 @@ export class VotingService {
       throw new AppError('errors.vote.session_invalid', 401);
     }
     const voterId = payload.voterId;
+    const phoneLimitKey = await hmacHex(
+      this.tokenSecret(),
+      `vote-submit-voter:${station.id}:${voterId}`
+    );
+    if (!(await this.dependencies.phoneRateLimiter.consume(`vote:submit:phone:${phoneLimitKey}`))) {
+      throw new AppError('errors.vote.rate_limited', 429);
+    }
     const alreadyVoted = await this.repository.withTransaction(async (repository) => {
       const lockedStation = await repository.findStation(publicId, true);
       if (!lockedStation || lockedStation.id !== station.id) {
@@ -194,8 +207,10 @@ export class VotingService {
     publicId: string,
     selections: VotingSelection[],
     deviceUuid: string,
-    fingerprintHash: string
+    fingerprintHash: string,
+    ip = 'unknown'
   ) {
+    await this.rateLimitSubmitIp(ip);
     const station = await this.requireStation(publicId);
     this.requireModeAndOpen(station, 'PUBLIC_POLL');
     const fingerprint = await hashFingerprint(this.tokenSecret(), fingerprintHash);
@@ -311,10 +326,10 @@ export class VotingService {
     });
   }
 
-  private async consumeIpLimit(ip: string) {
-    const ipKey = await hmacHex(this.tokenSecret(), `vote-entry-ip:${ip}`);
-    if (!this.dependencies.failedEntryRateLimiter.consume(ipKey, this.now().getTime())) {
-      throw new AppError('errors.vote.invalid_token', 401);
+  async rateLimitSubmitIp(ip: string): Promise<void> {
+    const ipKey = await hmacHex(this.tokenSecret(), `vote-submit-ip:${ip}`);
+    if (!(await this.dependencies.ipRateLimiter.consume(`vote:submit:ip:${ipKey}`))) {
+      throw new AppError('errors.vote.rate_limited', 429);
     }
   }
 

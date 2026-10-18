@@ -27,6 +27,7 @@ export interface AppDependencies {
   votingServiceFactory: VotingServiceFactory;
   analyticsServiceFactory: AnalyticsServiceFactory;
   logger: Logger;
+  requestTimeoutMs?: number;
   databaseClientProvider?: () => Promise<DbClient>;
   closeDatabaseClientAfterRequest?: boolean;
   closeDatabaseClient?: () => Promise<void>;

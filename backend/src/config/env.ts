@@ -17,7 +17,11 @@ const configSchema = z
     APP_BASE_URL: z.string().url().default('http://localhost:3000'),
     COOKIE_DOMAIN: z
       .string()
-      .regex(/^(?:[A-Za-z0-9.-]+)?$/u)
+      .refine(
+        (value) =>
+          value === '' || /^(?:\.)?(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/iu.test(value),
+        'COOKIE_DOMAIN must be a parent domain hostname without a scheme or path'
+      )
       .default(''),
     PASSWORD_HASH_ITERATIONS: z.coerce.number().int().min(1).default(5_000),
     ENABLE_EMAIL_VERIFICATION: z.preprocess(
@@ -47,6 +51,17 @@ const configSchema = z
       .pipe(z.array(validOrigin).min(1))
   })
   .superRefine((value, context) => {
+    if (value.COOKIE_DOMAIN) {
+      const domain = value.COOKIE_DOMAIN.replace(/^\./u, '').toLowerCase();
+      const appHost = new URL(value.APP_BASE_URL).hostname.toLowerCase();
+      if (appHost !== domain && !appHost.endsWith(`.${domain}`)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'COOKIE_DOMAIN must be the app host or one of its parent domains',
+          path: ['COOKIE_DOMAIN']
+        });
+      }
+    }
     if (value.EMAIL_PROVIDER === 'brevo' && !value.BREVO_API_KEY) {
       context.addIssue({
         code: 'custom',

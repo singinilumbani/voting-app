@@ -57,6 +57,13 @@
       "when": 1792327684631,
       "tag": "0007_unusual_kree",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792331950148,
+      "tag": "0008_loud_black_knight",
+      "breakpoints": true
     }
   ]
 }

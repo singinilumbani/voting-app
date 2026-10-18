@@ -10,3 +10,19 @@ RETENTION_DAYS = "7"
 
 [triggers]
 crons = ["* * * * *", "0 * * * *", "0 0 * * *"]
+
+[[ratelimits]]
+name = "STRICT_RATE_LIMITER"
+namespace_id = "731001"
+
+  [ratelimits.simple]
+  limit = 5
+  period = 60
+
+[[ratelimits]]
+name = "LOOSE_RATE_LIMITER"
+namespace_id = "731002"
+
+  [ratelimits.simple]
+  limit = 30
+  period = 60

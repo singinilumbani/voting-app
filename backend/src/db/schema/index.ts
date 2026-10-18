@@ -9,5 +9,6 @@ export * from './password-reset-tokens.js';
 export * from './payments.js';
 export * from './polling-stations.js';
 export * from './registered-voters.js';
+export * from './rate-limit-counters.js';
 export * from './sessions.js';
 export * from './users.js';

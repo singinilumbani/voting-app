@@ -5,6 +5,7 @@ import type { AppDependencies } from './core/types.js';
 import { bodyLimit } from './middleware/body-limit.js';
 import { createCorsMiddleware } from './middleware/cors.js';
 import { securityHeaders } from './middleware/security-headers.js';
+import { createRequestTimeout } from './middleware/request-timeout.js';
 import { databaseLifecycle } from './middleware/database-lifecycle.js';
 import { createHostAuthRouter } from './routes/host-auth.js';
 import { hostAuthServiceLifecycle } from './middleware/host-auth-service-lifecycle.js';
@@ -21,6 +22,7 @@ export function createApp(deps: AppDependencies) {
   app.use(requestId);
   app.use(securityHeaders);
   app.use(createCorsMiddleware(deps.config));
+  app.use(createRequestTimeout(deps.requestTimeoutMs));
   app.use(bodyLimit);
   app.use(databaseLifecycle(deps));
   app.use(hostAuthServiceLifecycle(deps.hostAuthServiceFactory));

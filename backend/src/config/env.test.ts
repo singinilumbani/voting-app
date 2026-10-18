@@ -30,12 +30,13 @@ describe('loadConfig', () => {
       loadConfig({
         PASSWORD_HASH_ITERATIONS: '25000',
         ENABLE_EMAIL_VERIFICATION: 'true',
-        COOKIE_DOMAIN: 'example.test'
+        COOKIE_DOMAIN: '.example.test',
+        APP_BASE_URL: 'https://app.example.test'
       })
     ).toMatchObject({
       passwordHashIterations: 25_000,
       enableEmailVerification: true,
-      cookieDomain: 'example.test'
+      cookieDomain: '.example.test'
     });
     expect(() => loadConfig({ EMAIL_PROVIDER: 'brevo' })).toThrow();
   });
@@ -74,6 +75,16 @@ describe('loadConfig', () => {
   it('rejects an invalid port and non-origin CORS URL', () => {
     expect(() => loadConfig({ PORT: '70000' })).toThrow();
     expect(() => loadConfig({ CORS_ORIGINS: 'https://example.com/path' })).toThrow();
+  });
+
+  it('rejects malformed or unrelated cookie domains', () => {
+    expect(() => loadConfig({ COOKIE_DOMAIN: 'https://example.test' })).toThrow();
+    expect(() =>
+      loadConfig({
+        COOKIE_DOMAIN: '.other.test',
+        APP_BASE_URL: 'https://app.example.test'
+      })
+    ).toThrow();
   });
 
   it('limits raw-data retention to the supported 7-to-14-day window', () => {
