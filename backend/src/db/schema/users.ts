@@ -15,6 +15,10 @@ export const users = pgTable(
     lastLoginAt: timestamp('last_login_at', { withTimezone: true, mode: 'date' }),
     emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true, mode: 'date' }),
     purgeAt: timestamp('purge_at', { withTimezone: true, mode: 'date' }),
+    inactivityWarningSentAt: timestamp('inactivity_warning_sent_at', {
+      withTimezone: true,
+      mode: 'date'
+    }),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
   },
   (table) => [

@@ -1,6 +1,7 @@
 import {
   boolean,
   check,
+  index,
   integer,
   pgTable,
   text,
@@ -41,6 +42,18 @@ export const pollingStations = pgTable(
   },
   (table) => [
     uniqueIndex('polling_stations_public_id_unique').on(table.publicId),
+    index('polling_stations_registration_end_idx')
+      .on(table.regEndsAt)
+      .where(sql`${table.status} = 'REG_OPEN' AND ${table.regEndsAt} IS NOT NULL`),
+    index('polling_stations_vote_start_idx')
+      .on(table.mode, table.status, table.voteStartsAt)
+      .where(sql`${table.voteStartsAt} IS NOT NULL`),
+    index('polling_stations_vote_end_idx')
+      .on(table.voteEndsAt)
+      .where(sql`${table.status} = 'VOTE_OPEN' AND ${table.voteEndsAt} IS NOT NULL`),
+    index('polling_stations_retention_idx')
+      .on(table.closedAt)
+      .where(sql`${table.status} = 'VOTE_CLOSED' AND ${table.closedAt} IS NOT NULL`),
     check('polling_stations_voter_cap_check', sql`${table.voterCap} BETWEEN 2 AND 50000`)
   ]
 );

@@ -6,3 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 DB_DRIVER = "neon"
 PUBLIC_POLL_BALLOT_CEILING = "2500"
+RETENTION_DAYS = "7"
+
+[triggers]
+crons = ["* * * * *", "0 * * * *", "0 0 * * *"]

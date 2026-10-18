@@ -34,6 +34,7 @@ const configSchema = z
     TOKEN_HMAC_SECRET: z.string().min(32).optional(),
     SESSION_SECRET: z.string().min(32).optional(),
     PUBLIC_POLL_BALLOT_CEILING: z.coerce.number().int().min(1).default(2500),
+    RETENTION_DAYS: z.coerce.number().int().min(7).max(14).default(7),
     CORS_ORIGINS: z
       .string()
       .default('http://localhost:3000')
@@ -74,6 +75,7 @@ export interface AppConfig {
   tokenHmacSecret?: string;
   sessionSecret?: string;
   publicPollBallotCeiling: number;
+  retentionDays: number;
   corsOrigins: string[];
 }
 
@@ -107,6 +109,7 @@ export function loadConfig(source: unknown): AppConfig {
       : { tokenHmacSecret: parsed.TOKEN_HMAC_SECRET }),
     ...(parsed.SESSION_SECRET === undefined ? {} : { sessionSecret: parsed.SESSION_SECRET }),
     publicPollBallotCeiling: parsed.PUBLIC_POLL_BALLOT_CEILING,
+    retentionDays: parsed.RETENTION_DAYS,
     corsOrigins: parsed.CORS_ORIGINS
   };
 }

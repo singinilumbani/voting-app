@@ -20,6 +20,7 @@ describe('loadConfig', () => {
       emailFrom: 'noreply@example.test',
       cloudinaryUploadFolder: 'voting-app',
       publicPollBallotCeiling: 2_500,
+      retentionDays: 7,
       corsOrigins: ['https://app.example', 'https://admin.example']
     });
   });
@@ -73,5 +74,11 @@ describe('loadConfig', () => {
   it('rejects an invalid port and non-origin CORS URL', () => {
     expect(() => loadConfig({ PORT: '70000' })).toThrow();
     expect(() => loadConfig({ CORS_ORIGINS: 'https://example.com/path' })).toThrow();
+  });
+
+  it('limits raw-data retention to the supported 7-to-14-day window', () => {
+    expect(loadConfig({ RETENTION_DAYS: '14' }).retentionDays).toBe(14);
+    expect(() => loadConfig({ RETENTION_DAYS: '6' })).toThrow();
+    expect(() => loadConfig({ RETENTION_DAYS: '15' })).toThrow();
   });
 });

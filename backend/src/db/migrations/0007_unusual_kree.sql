@@ -1,0 +1,4 @@
+CREATE INDEX "polling_stations_registration_end_idx" ON "polling_stations" USING btree ("reg_ends_at") WHERE "polling_stations"."status" = 'REG_OPEN' AND "polling_stations"."reg_ends_at" IS NOT NULL;--> statement-breakpoint
+CREATE INDEX "polling_stations_vote_start_idx" ON "polling_stations" USING btree ("mode","status","vote_starts_at") WHERE "polling_stations"."vote_starts_at" IS NOT NULL;--> statement-breakpoint
+CREATE INDEX "polling_stations_vote_end_idx" ON "polling_stations" USING btree ("vote_ends_at") WHERE "polling_stations"."status" = 'VOTE_OPEN' AND "polling_stations"."vote_ends_at" IS NOT NULL;--> statement-breakpoint
+CREATE INDEX "polling_stations_retention_idx" ON "polling_stations" USING btree ("closed_at") WHERE "polling_stations"."status" = 'VOTE_CLOSED' AND "polling_stations"."closed_at" IS NOT NULL;

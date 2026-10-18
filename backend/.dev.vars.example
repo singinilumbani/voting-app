@@ -4,3 +4,4 @@ CORS_ORIGINS=http://localhost:3000
 TOKEN_HMAC_SECRET=replace-with-a-random-secret-at-least-32-characters-long
 SESSION_SECRET=replace-with-a-different-random-secret-at-least-32-characters-long
 PUBLIC_POLL_BALLOT_CEILING=2500
+RETENTION_DAYS=7

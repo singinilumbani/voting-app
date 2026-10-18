@@ -182,6 +182,7 @@ function createContext(enableEmailVerification: boolean) {
         lastLoginAt: values.lastLoginAt ?? null,
         emailVerifiedAt: values.emailVerifiedAt ?? null,
         purgeAt: values.purgeAt ?? null,
+        inactivityWarningSentAt: values.inactivityWarningSentAt ?? null,
         createdAt: now()
       };
       usersById.set(user.id, user);

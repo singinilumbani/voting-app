@@ -139,7 +139,12 @@ export class HostAuthService {
 
     const now = this.now();
     const { updated, sessionToken } = await this.repository.withTransaction(async (repository) => {
-      const updatedUser = await repository.updateUser(user.id, { lastLoginAt: now });
+      const updatedUser = await repository.updateUser(user.id, {
+        lastLoginAt: now,
+        ...(user.accountType === 'LONG_TERM'
+          ? { inactivityWarningSentAt: null, purgeAt: null }
+          : {})
+      });
       if (!updatedUser) {
         throw new UnauthorizedError(MESSAGE_KEYS.errors.hostAuth.invalidCredentials);
       }
@@ -346,15 +351,20 @@ export class HostAuthService {
       throw new AppError(MESSAGE_KEYS.errors.hostAuth.tierDowngradeConfirmationRequired, 400);
     }
     const purgeAt =
-      accountType === 'TEMPORARY' && user.accountType !== 'TEMPORARY'
-        ? addDays(this.now(), 7)
-        : accountType === 'LONG_TERM'
-          ? null
-          : user.purgeAt;
-    const updated = await this.repository.updateUser(hostId, { accountType, purgeAt });
+      accountType === 'LONG_TERM'
+        ? null
+        : user.accountType === 'TEMPORARY'
+          ? user.purgeAt
+          : addDays(this.now(), 7);
+    const updated = await this.repository.updateUser(hostId, {
+      accountType,
+      purgeAt,
+      inactivityWarningSentAt: null
+    });
     if (!updated) {
       throw new UnauthorizedError();
     }
+
     return toHostProfile(updated);
   }
 
@@ -421,6 +431,10 @@ export class HostAuthService {
   }
 }
 
+function addDays(date: Date, days: number): Date {
+  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+}
+
 function decodeOpaqueToken(token: string): Uint8Array | undefined {
   try {
     const bytes = base64urlDecode(token);
@@ -453,10 +467,6 @@ function toHostProfile(user: {
     purgeAt: user.purgeAt,
     lastLoginAt: user.lastLoginAt
   };
-}
-
-function addDays(date: Date, days: number): Date {
-  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 }
 
 function mapUniqueConflict(error: unknown): unknown {

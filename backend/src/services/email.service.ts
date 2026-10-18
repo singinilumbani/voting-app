@@ -1,7 +1,11 @@
 import type { AppConfig } from '../config/env.js';
 import type { Logger } from '../core/logger.js';
 
-export type HostEmailTemplateKey = 'host.verify_email' | 'host.reset_password';
+export type HostEmailTemplateKey =
+  | 'host.verify_email'
+  | 'host.reset_password'
+  | 'host.temporary_purge_warning'
+  | 'host.inactivity_warning';
 
 export interface EmailService {
   send(key: HostEmailTemplateKey, recipient: string, values: { link: string }): Promise<void>;
@@ -27,6 +31,14 @@ const templates: Record<HostEmailTemplateKey, EmailTemplate> = {
   'host.reset_password': {
     subject: 'Reset your host password',
     body: 'Reset your host account password using this link: {{link}}'
+  },
+  'host.temporary_purge_warning': {
+    subject: 'Your temporary host account will be deleted soon',
+    body: 'Your temporary host account and associated election data are scheduled for deletion in 48 hours. Review your account and export any reports you need: {{link}}'
+  },
+  'host.inactivity_warning': {
+    subject: 'Your host account is inactive',
+    body: 'Your host account has been inactive for five months. Log in within the next month to keep it active: {{link}}'
   }
 };
 
