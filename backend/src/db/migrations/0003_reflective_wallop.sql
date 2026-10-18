@@ -1,0 +1,2 @@
+ALTER TABLE "polling_stations" ADD COLUMN "registration_duration_hours" integer DEFAULT 12 NOT NULL;--> statement-breakpoint
+ALTER TABLE "polling_stations" ADD COLUMN "voting_duration_minutes" integer DEFAULT 720 NOT NULL;

@@ -18,6 +18,7 @@ describe('loadConfig', () => {
       enableEmailVerification: false,
       emailProvider: 'console',
       emailFrom: 'noreply@example.test',
+      cloudinaryUploadFolder: 'voting-app',
       corsOrigins: ['https://app.example', 'https://admin.example']
     });
   });
@@ -47,8 +48,25 @@ describe('loadConfig', () => {
       dbDriver: 'neon',
       databaseUrl: 'postgres://user:password@localhost/vote_app_dev'
     });
+
     expect(() => loadConfig({ DB_DRIVER: 'sqlite' })).toThrow();
     expect(() => loadConfig({ DATABASE_URL: 'not-a-url' })).toThrow();
+  });
+
+  it('loads Cloudinary upload credentials and folder settings', () => {
+    expect(
+      loadConfig({
+        CLOUDINARY_CLOUD_NAME: 'cloud-name',
+        CLOUDINARY_API_KEY: 'api-key',
+        CLOUDINARY_API_SECRET: 'api-secret',
+        CLOUDINARY_UPLOAD_FOLDER: 'custom-folder'
+      })
+    ).toMatchObject({
+      cloudinaryCloudName: 'cloud-name',
+      cloudinaryApiKey: 'api-key',
+      cloudinaryApiSecret: 'api-secret',
+      cloudinaryUploadFolder: 'custom-folder'
+    });
   });
 
   it('rejects an invalid port and non-origin CORS URL', () => {

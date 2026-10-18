@@ -29,6 +29,8 @@ export const pollingStations = pgTable(
     allowAbstain: boolean('allow_abstain').notNull().default(false),
     mobileOnly: boolean('mobile_only').notNull().default(false),
     voterCap: integer('voter_cap').notNull(),
+    registrationDurationHours: integer('registration_duration_hours').notNull().default(12),
+    votingDurationMinutes: integer('voting_duration_minutes').notNull().default(720),
     isLaunched: boolean('is_launched').notNull().default(false),
     regStartsAt: timestamp('reg_starts_at', { withTimezone: true, mode: 'date' }),
     regEndsAt: timestamp('reg_ends_at', { withTimezone: true, mode: 'date' }),

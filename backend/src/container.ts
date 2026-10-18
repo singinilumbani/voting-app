@@ -13,6 +13,9 @@ import { HostAuthService } from './services/host-auth.service.js';
 import type { EmailService } from './services/email.service.js';
 import type { PasswordHasher } from './services/password-hasher.js';
 import type { RateLimiter } from './services/rate-limiter.js';
+import { StationController } from './controllers/station.controller.js';
+import { StationRepository } from './repositories/station.repository.js';
+import { StationService } from './services/station.service.js';
 
 export function createContainer(
   config: AppConfig,
@@ -37,6 +40,8 @@ export function createContainer(
       emailService,
       rateLimiter
     });
+  const stationServiceFactory = (client: DbClient) =>
+    new StationService(StationRepository.fromClient(client), { config });
   const databaseClientScope = options.databaseClientScope ?? 'shared';
   const createDatabaseClient = options.createDatabaseClient;
   if (config.databaseUrl && !createDatabaseClient) {
@@ -59,7 +64,9 @@ export function createContainer(
     config,
     healthController: new HealthController(healthService),
     hostAuthController: new HostAuthController(config),
+    stationController: new StationController(),
     hostAuthServiceFactory,
+    stationServiceFactory,
     logger,
     ...(databaseClientProvider === undefined ? {} : { databaseClientProvider }),
     ...(databaseClientScope === 'request'

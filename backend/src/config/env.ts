@@ -27,6 +27,10 @@ const configSchema = z
     EMAIL_PROVIDER: z.enum(['console', 'brevo']).default('console'),
     BREVO_API_KEY: z.string().optional(),
     EMAIL_FROM: z.string().email().default('noreply@example.test'),
+    CLOUDINARY_CLOUD_NAME: z.string().optional(),
+    CLOUDINARY_API_KEY: z.string().optional(),
+    CLOUDINARY_API_SECRET: z.string().optional(),
+    CLOUDINARY_UPLOAD_FOLDER: z.string().default('voting-app'),
     CORS_ORIGINS: z
       .string()
       .default('http://localhost:3000')
@@ -60,6 +64,10 @@ export interface AppConfig {
   emailProvider: 'console' | 'brevo';
   brevoApiKey?: string;
   emailFrom: string;
+  cloudinaryCloudName?: string;
+  cloudinaryApiKey?: string;
+  cloudinaryApiSecret?: string;
+  cloudinaryUploadFolder: string;
   corsOrigins: string[];
 }
 
@@ -78,6 +86,16 @@ export function loadConfig(source: unknown): AppConfig {
     emailProvider: parsed.EMAIL_PROVIDER,
     ...(parsed.BREVO_API_KEY === undefined ? {} : { brevoApiKey: parsed.BREVO_API_KEY }),
     emailFrom: parsed.EMAIL_FROM,
+    ...(parsed.CLOUDINARY_CLOUD_NAME === undefined
+      ? {}
+      : { cloudinaryCloudName: parsed.CLOUDINARY_CLOUD_NAME }),
+    ...(parsed.CLOUDINARY_API_KEY === undefined
+      ? {}
+      : { cloudinaryApiKey: parsed.CLOUDINARY_API_KEY }),
+    ...(parsed.CLOUDINARY_API_SECRET === undefined
+      ? {}
+      : { cloudinaryApiSecret: parsed.CLOUDINARY_API_SECRET }),
+    cloudinaryUploadFolder: parsed.CLOUDINARY_UPLOAD_FOLDER,
     corsOrigins: parsed.CORS_ORIGINS
   };
 }
