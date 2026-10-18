@@ -43,6 +43,24 @@ export const MESSAGE_KEYS = Object.freeze({
       revokeNotAllowed: 'errors.voter.revoke_not_allowed',
       reissueNotAllowed: 'errors.voter.reissue_not_allowed'
     }),
+    vote: Object.freeze({
+      invalidToken: 'errors.vote.invalid_token',
+      tokenLocked: 'errors.vote.token_locked',
+      alreadyVoted: 'errors.vote.already_voted',
+      notApproved: 'errors.vote.not_approved',
+      sessionInvalid: 'errors.vote.session_invalid',
+      sessionExpired: 'errors.vote.session_expired',
+      partialBallot: 'errors.vote.partial_ballot',
+      invalidSelection: 'errors.vote.invalid_selection',
+      abstainNotAllowed: 'errors.vote.abstain_not_allowed',
+      duplicateDevice: 'errors.vote.duplicate_device',
+      capacityReached: 'errors.vote.capacity_reached',
+      resultsNotAvailable: 'errors.vote.results_not_available',
+      resultsAccessRequired: 'errors.vote.results_access_required',
+      notOpen: 'errors.vote.not_open',
+      wrongMode: 'errors.vote.wrong_mode',
+      notConfigured: 'errors.vote.not_configured'
+    }),
     validation: 'errors.validation'
   }),
   status: Object.freeze({
@@ -67,6 +85,14 @@ export const MESSAGE_KEYS = Object.freeze({
       passwordReset: 'status.host_auth.password_reset',
       emailVerified: 'status.host_auth.email_verified',
       passwordChanged: 'status.host_auth.password_changed'
+    }),
+    vote: Object.freeze({
+      submitted: 'status.vote.submitted'
+    })
+  }),
+  flags: Object.freeze({
+    voter: Object.freeze({
+      tokenAttemptsExceeded: 'flags.voter.token_attempts_exceeded'
     })
   })
 });
@@ -78,6 +104,9 @@ export type MessageKey =
   | (typeof MESSAGE_KEYS.errors.hostAuth)[keyof typeof MESSAGE_KEYS.errors.hostAuth]
   | (typeof MESSAGE_KEYS.errors.registration)[keyof typeof MESSAGE_KEYS.errors.registration]
   | (typeof MESSAGE_KEYS.errors.voter)[keyof typeof MESSAGE_KEYS.errors.voter]
+  | (typeof MESSAGE_KEYS.errors.vote)[keyof typeof MESSAGE_KEYS.errors.vote]
   | (typeof MESSAGE_KEYS.status.voter)[keyof typeof MESSAGE_KEYS.status.voter]
   | (typeof MESSAGE_KEYS.status.station)[keyof typeof MESSAGE_KEYS.status.station]
-  | (typeof MESSAGE_KEYS.status.hostAuth)[keyof typeof MESSAGE_KEYS.status.hostAuth];
+  | (typeof MESSAGE_KEYS.status.hostAuth)[keyof typeof MESSAGE_KEYS.status.hostAuth]
+  | (typeof MESSAGE_KEYS.status.vote)[keyof typeof MESSAGE_KEYS.status.vote]
+  | (typeof MESSAGE_KEYS.flags.voter)[keyof typeof MESSAGE_KEYS.flags.voter];

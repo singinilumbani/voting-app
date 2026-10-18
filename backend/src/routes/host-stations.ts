@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { StationController } from '../controllers/station.controller.js';
 import type { VoterController } from '../controllers/voter.controller.js';
 import { requireHost } from '../middleware/require-host.js';
+import type { VotingController } from '../controllers/voting.controller.js';
 
 export function createHostStationsRouter(
   controller: StationController,
@@ -46,11 +47,15 @@ export function createHostStationsRouter(
 
 export function createPublicStationsRouter(
   controller: StationController,
-  voterController: VoterController
+  voterController: VoterController,
+  votingController: VotingController
 ): Router {
   const router = Router({ mergeParams: true });
   router.post('/:publicId/register', voterController.register);
   router.post('/:publicId/status', voterController.status);
+  router.post('/:publicId/vote/enter', votingController.enter);
+  router.post('/:publicId/vote/submit', votingController.submit);
+  router.get('/:publicId/results', votingController.results);
   router.get('/:publicId', controller.publicDetail);
   return router;
 }

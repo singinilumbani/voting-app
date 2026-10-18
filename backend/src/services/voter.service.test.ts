@@ -145,7 +145,8 @@ describe('VoterService', () => {
     const context = createContext();
     context.addVoter({
       clientDeviceUuid: '00000000-0000-4000-8000-000000000099',
-      deviceFingerprintHash: 'f'.repeat(64)
+      deviceFingerprintHash: 'f'.repeat(64),
+      flagReason: 'flags.voter.token_attempts_exceeded'
     });
     context.addVoter({
       clientDeviceUuid: '00000000-0000-4000-8000-000000000099',
@@ -157,6 +158,9 @@ describe('VoterService', () => {
       pageSize: 25
     });
     expect(list.voters[0]).toMatchObject({ deviceFlag: 'SAME_DEVICE_AS_1' });
+    expect(list.voters).toContainEqual(
+      expect.objectContaining({ flagReason: 'flags.voter.token_attempts_exceeded' })
+    );
   });
 
   it('exports only names, phone numbers, and statuses, never tokens', async () => {
@@ -314,7 +318,7 @@ function createContext(
       };
     },
     async voterIntegrity() {
-      return { approvedVoters: 0, ballotsCast: 0, abstentions: 0 };
+      return { approvedVoters: 0, ballotsCast: 0, abstentions: 0, possibleDuplicates: 0 };
     },
     async addActivity(values) {
       events.push(values.eventType);

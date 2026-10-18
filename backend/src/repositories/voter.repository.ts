@@ -1,7 +1,14 @@
 import { and, count, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { BaseRepository } from '../db/base.repository.js';
 import type { DbClient, DatabaseExecutor } from '../db/client.js';
-import { activityLog, castVotes, pollingStations, registeredVoters } from '../db/schema/index.js';
+import {
+  activityLog,
+  castVotes,
+  deviceRecords,
+  pollingStations,
+  registeredVoters
+} from '../db/schema/index.js';
 import type { VoterInsert, VoterRepositoryPort } from '../services/voter.repository.js';
 
 export class VoterRepository extends BaseRepository implements VoterRepositoryPort {
@@ -115,6 +122,7 @@ export class VoterRepository extends BaseRepository implements VoterRepositoryPo
         phoneNumber: registeredVoters.phoneNumber,
         approvalStatus: registeredVoters.approvalStatus,
         rejectionReason: registeredVoters.rejectionReason,
+        flagReason: registeredVoters.flagReason,
         blocked: registeredVoters.blocked,
         deviceFingerprintHash: registeredVoters.deviceFingerprintHash,
         clientDeviceUuid: registeredVoters.clientDeviceUuid,
@@ -161,6 +169,11 @@ export class VoterRepository extends BaseRepository implements VoterRepositoryPo
   }
 
   async voterIntegrity(stationId: string) {
+    const [station] = await this.db
+      .select({ mode: pollingStations.mode })
+      .from(pollingStations)
+      .where(eq(pollingStations.id, stationId))
+      .limit(1);
     const [approved] = await this.db
       .select({ value: count() })
       .from(registeredVoters)
@@ -176,14 +189,36 @@ export class VoterRepository extends BaseRepository implements VoterRepositoryPo
       .where(
         and(eq(registeredVoters.pollingStationId, stationId), eq(registeredVoters.hasVoted, true))
       );
+    const [publicPollBallots] = await this.db
+      .select({ value: count() })
+      .from(deviceRecords)
+      .where(and(eq(deviceRecords.pollingStationId, stationId), eq(deviceRecords.hasVoted, true)));
     const [abstentions] = await this.db
       .select({ value: count() })
       .from(castVotes)
       .where(and(eq(castVotes.pollingStationId, stationId), isNull(castVotes.candidateId)));
+    const firstDevice = alias(deviceRecords, 'first_device');
+    const secondDevice = alias(deviceRecords, 'second_device');
+    const [duplicates] = await this.db
+      .select({
+        value: sql<number>`count(DISTINCT ${secondDevice.id})::int`
+      })
+      .from(firstDevice)
+      .innerJoin(
+        secondDevice,
+        and(
+          eq(firstDevice.pollingStationId, secondDevice.pollingStationId),
+          eq(firstDevice.deviceFingerprintHash, secondDevice.deviceFingerprintHash),
+          sql`${firstDevice.id} < ${secondDevice.id}`
+        )
+      )
+      .where(eq(firstDevice.pollingStationId, stationId));
     return {
       approvedVoters: approved?.value ?? 0,
-      ballotsCast: ballots?.value ?? 0,
-      abstentions: abstentions?.value ?? 0
+      ballotsCast:
+        station?.mode === 'PUBLIC_POLL' ? (publicPollBallots?.value ?? 0) : (ballots?.value ?? 0),
+      abstentions: abstentions?.value ?? 0,
+      possibleDuplicates: station?.mode === 'PUBLIC_POLL' ? (duplicates?.value ?? 0) : 0
     };
   }
 

@@ -19,6 +19,9 @@ import { StationService } from './services/station.service.js';
 import { VoterController } from './controllers/voter.controller.js';
 import { VoterRepository } from './repositories/voter.repository.js';
 import { VoterService } from './services/voter.service.js';
+import { VotingController } from './controllers/voting.controller.js';
+import { VotingRepository } from './repositories/voting.repository.js';
+import { VotingService } from './services/voting.service.js';
 
 export function createContainer(
   config: AppConfig,
@@ -53,6 +56,12 @@ export function createContainer(
       registrationRateLimiter,
       statusRateLimiter
     });
+  const failedEntryRateLimiter = new InMemoryRateLimiter(20, 60_000);
+  const votingServiceFactory = (client: DbClient) =>
+    new VotingService(VotingRepository.fromClient(client), {
+      config,
+      failedEntryRateLimiter
+    });
   const databaseClientScope = options.databaseClientScope ?? 'shared';
   const createDatabaseClient = options.createDatabaseClient;
   if (config.databaseUrl && !createDatabaseClient) {
@@ -77,9 +86,11 @@ export function createContainer(
     hostAuthController: new HostAuthController(config),
     stationController: new StationController(),
     voterController: new VoterController(),
+    votingController: new VotingController(),
     hostAuthServiceFactory,
     stationServiceFactory,
     voterServiceFactory,
+    votingServiceFactory,
     logger,
     ...(databaseClientProvider === undefined ? {} : { databaseClientProvider }),
     ...(databaseClientScope === 'request'

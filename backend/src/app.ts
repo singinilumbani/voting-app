@@ -11,6 +11,7 @@ import { hostAuthServiceLifecycle } from './middleware/host-auth-service-lifecyc
 import { stationServiceLifecycle } from './middleware/station-service-lifecycle.js';
 import { createHostStationsRouter, createPublicStationsRouter } from './routes/host-stations.js';
 import { voterServiceLifecycle } from './middleware/voter-service-lifecycle.js';
+import { votingServiceLifecycle } from './middleware/voting-service-lifecycle.js';
 
 export function createApp(deps: AppDependencies) {
   const app = express();
@@ -24,6 +25,7 @@ export function createApp(deps: AppDependencies) {
   app.use(hostAuthServiceLifecycle(deps.hostAuthServiceFactory));
   app.use(stationServiceLifecycle(deps.stationServiceFactory));
   app.use(voterServiceLifecycle(deps.voterServiceFactory));
+  app.use(votingServiceLifecycle(deps.votingServiceFactory));
 
   app.get('/api/v1/health', deps.healthController.get);
   app.use('/api/v1/host/auth', createHostAuthRouter(deps.hostAuthController));
@@ -33,7 +35,7 @@ export function createApp(deps: AppDependencies) {
   );
   app.use(
     '/api/v1/public/stations',
-    createPublicStationsRouter(deps.stationController, deps.voterController)
+    createPublicStationsRouter(deps.stationController, deps.voterController, deps.votingController)
   );
 
   app.use(routeNotFound);

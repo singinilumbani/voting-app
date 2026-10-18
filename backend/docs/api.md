@@ -287,7 +287,7 @@ All endpoints below use the host session cookie and require station ownership. V
 
 - **Auth:** Required `host_session` cookie.
 - **Request:** Optional query parameters `search` (name or phone), `status` (`PENDING`, `APPROVED`, `REJECTED`, `VOTED`, `REVOKED`), `page` (default 1), and `pageSize` (default 25, maximum 100).
-- **Response:** `200 { "voters": VoterDto[], "counts": { "pending": integer, "approved": integer, "rejected": integer, "revoked": integer, "voted": integer, "cap": integer }, "total": integer, "page": integer, "pageSize": integer }`. Each row includes name, locally formatted phone (international numbers use `+` and E.164 digits), WhatsApp URL, status, rejection reason, blocked flag, registration/approval times, `hasVoted`, and `deviceFlag` (`SAME_DEVICE_AS_N` or null). No ballot choices or tokens are returned.
+- **Response:** `200 { "voters": VoterDto[], "counts": { "pending": integer, "approved": integer, "rejected": integer, "revoked": integer, "voted": integer, "cap": integer }, "total": integer, "page": integer, "pageSize": integer }`. Each row includes name, locally formatted phone (international numbers use `+` and E.164 digits), WhatsApp URL, status, rejection reason, `flagReason` message key, blocked flag, registration/approval times, `hasVoted`, and `deviceFlag` (`SAME_DEVICE_AS_N` or null). No ballot choices or tokens are returned.
 - **Errors:** `400 errors.validation.failed`; `401 errors.auth.unauthorized`; `404 errors.station.not_found`.
 
 ### Host approval actions
@@ -308,7 +308,38 @@ Approval and rejection are allowed while station status is `REG_OPEN` or `REG_CL
 | `POST /api/v1/host/stations/:stationId/voters/:voterId/revoke` | Host session; no body | `200 { "voterId": UUID, "status": "REVOKED" }` | `404 errors.station.not_found|voter.not_found`; `409 errors.voter.action_locked|revoke_not_allowed` |
 | `POST /api/v1/host/stations/:stationId/voters/:voterId/reissue-token` | Host session; no body | `200 { "token": "TK-XXXX-XXXX-XXXX" }`; old token becomes invalid immediately | `404 errors.station.not_found|voter.not_found`; `409 errors.voter.action_locked|reissue_not_allowed`; `503 errors.registration.not_configured` |
 | `POST /api/v1/host/stations/:stationId/voters/:voterId/block-number` | Host session; no body | `204` | `404 errors.station.not_found|voter.not_found` |
-| `GET /api/v1/host/stations/:stationId/voters/integrity` | Host session; no body | `200 { "approvedVoters": integer, "ballotsCast": integer, "abstentions": integer, "alert": boolean }` | `404 errors.station.not_found` |
+| `GET /api/v1/host/stations/:stationId/voters/integrity` | Host session; no body | `200 { "approvedVoters": integer, "ballotsCast": integer, "abstentions": integer, "possibleDuplicates": integer, "alert": boolean }` | `404 errors.station.not_found` |
 | `GET /api/v1/host/stations/:stationId/voters/export.csv` | Host session; no body | `200 text/csv` with only `full_name`, `phone_number`, and `status` columns | `404 errors.station.not_found` |
 
-Revoke and reissue are available through `REG_OPEN`, `REG_CLOSED`, and `VOTE_OPEN` until voting closes. Reissue is limited to pending or approved voters who have not voted; it resets failed-token attempts and lockout state. Revoke is limited to approved voters who have not voted. These actions and block-number each write to the station activity log. `ballotsCast` is counted from registered-voter `has_voted` state and is never joined to `cast_votes`; abstentions are counted separately from null-candidate cast-vote rows.
+Revoke and reissue are available through `REG_OPEN`, `REG_CLOSED`, and `VOTE_OPEN` until voting closes. Reissue is limited to pending or approved voters who have not voted; it resets failed-token attempts and lockout state. Revoke is limited to approved voters who have not voted. These actions and block-number each write to the station activity log. Closed Vote `ballotsCast` is counted from registered-voter `has_voted` state and is never joined to `cast_votes`; Public Poll `ballotsCast` is counted from voted device records. Abstentions are counted separately from null-candidate cast-vote rows. `possibleDuplicates` counts additional Public Poll device records sharing a fingerprint with a different client UUID; it is a host hint and never blocks a ballot.
+
+## Ballot access, submission, and results
+
+Public ballot routes use the station's unguessable `publicId`; they do not require a host session. They never return an individual voter's selections or correlate a cast-vote row with a voter or device. Signed credentials are returned only to the client that needs them and must be sent in an `Authorization: Bearer <token>` header where specified. Configure both `TOKEN_HMAC_SECRET` and `SESSION_SECRET` with private values of at least 32 characters.
+
+### `POST /api/v1/public/stations/:publicId/vote/enter` (Closed Vote)
+
+- **Auth:** None. The voter token is supplied in the request body.
+- **Request:** JSON `{ "token": string, "phone"?: string }`. `phone` is optional for a stored token; when provided, it must normalize to the phone belonging to that token.
+- **Response:** `200 { "alreadyVoted": false, "ballotSession": string, "expiresAt": UTC timestamp, "ballot": [{ "id": UUID, "title": string, "candidates": [{ "id": UUID, "name": string, "imageUrl": string | null }] }] }`. The signed session is scoped to the station and voter, and expires at the earlier of two hours or the voting end. It is not written to logs.
+- **Already voted:** `409 { "error": { "key": "errors.vote.already_voted", "requestId": string }, "resultsAccessToken"?: string }`. An access token is included only for `IMMEDIATE` results.
+- **Errors:** `400 errors.phone.*`; `401 errors.vote.invalid_token|session_invalid`; `403 errors.vote.not_approved`; `409 errors.vote.wrong_mode|not_open`; `423 errors.vote.token_locked`; `503 errors.vote.not_configured`. The loose IP limiter returns the same invalid-token key instead of revealing a distinct rate-limit response.
+
+### `POST /api/v1/public/stations/:publicId/vote/submit`
+
+- **Closed Vote auth:** `Authorization: Bearer <ballotSession>` from `vote/enter`.
+- **Closed Vote request:** JSON `{ "selections": [{ "categoryId": UUID, "candidateId": UUID | "ABSTAIN" }] }`. Every category must appear exactly once; candidates must belong to the selected category; Abstain is accepted only when enabled for the station.
+- **Public Poll auth:** None. Do not send a bearer session.
+- **Public Poll request:** JSON `{ "selections": [...], "deviceUuid": UUID, "fingerprintHash": string }`, with the same ballot validation as Closed Vote. The station-scoped device UUID can cast only one ballot; a fingerprint match with another UUID is accepted.
+- **Success:** `200 { "confirmation": "status.vote.submitted", "resultsAccessToken"?: string }`. The response never echoes selections. `resultsAccessToken` is returned only for `IMMEDIATE` results.
+- **Already voted:** Closed Vote returns `409 { "error": { "key": "errors.vote.already_voted", "requestId": string }, "resultsAccessToken"?: string }`; Public Poll returns `409 errors.vote.duplicate_device`.
+- **Errors:** `400 errors.vote.partial_ballot|invalid_selection|abstain_not_allowed`; `401 errors.vote.session_invalid|session_expired`; `403 errors.vote.not_approved`; `409 errors.vote.not_open|wrong_mode|capacity_reached|duplicate_device`; `503 errors.vote.not_configured`.
+
+Closed Vote ballot rows and the participation marker are committed together in one transaction after locking the station and voter rows. Public Poll locks the station row for capacity enforcement, stores the device record separately from the cast-vote rows, and never stores a device reference on a vote. Cast-vote rows contain no voter/device reference or timestamp.
+
+### `GET /api/v1/public/stations/:publicId/results`
+
+- **Auth:** For `IMMEDIATE`, `Authorization: Bearer <resultsAccessToken>` from successful submission (or the already-voted Closed Vote response) is required. For `CONCEALED`, no token is required after the station reaches `VOTE_CLOSED` or `ARCHIVED`.
+- **Request:** No body.
+- **Response:** `200` with one object per category: `{ "id": UUID, "title": string, "candidates": CandidateDto[], "results": [{ "candidateId": UUID | "ABSTAIN", "count": integer }] }`. Counts are aggregated and sorted; vote insertion order is not read.
+- **Errors:** `403 errors.vote.results_access_required`; `409 errors.vote.results_not_available`; `401 errors.vote.session_invalid|session_expired`; `404 errors.station.not_found`.

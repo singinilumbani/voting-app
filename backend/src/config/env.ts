@@ -32,6 +32,8 @@ const configSchema = z
     CLOUDINARY_API_SECRET: z.string().optional(),
     CLOUDINARY_UPLOAD_FOLDER: z.string().default('voting-app'),
     TOKEN_HMAC_SECRET: z.string().min(32).optional(),
+    SESSION_SECRET: z.string().min(32).optional(),
+    PUBLIC_POLL_BALLOT_CEILING: z.coerce.number().int().min(1).default(2500),
     CORS_ORIGINS: z
       .string()
       .default('http://localhost:3000')
@@ -70,6 +72,8 @@ export interface AppConfig {
   cloudinaryApiSecret?: string;
   cloudinaryUploadFolder: string;
   tokenHmacSecret?: string;
+  sessionSecret?: string;
+  publicPollBallotCeiling: number;
   corsOrigins: string[];
 }
 
@@ -101,6 +105,8 @@ export function loadConfig(source: unknown): AppConfig {
     ...(parsed.TOKEN_HMAC_SECRET === undefined
       ? {}
       : { tokenHmacSecret: parsed.TOKEN_HMAC_SECRET }),
+    ...(parsed.SESSION_SECRET === undefined ? {} : { sessionSecret: parsed.SESSION_SECRET }),
+    publicPollBallotCeiling: parsed.PUBLIC_POLL_BALLOT_CEILING,
     corsOrigins: parsed.CORS_ORIGINS
   };
 }

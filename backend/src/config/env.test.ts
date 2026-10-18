@@ -19,6 +19,7 @@ describe('loadConfig', () => {
       emailProvider: 'console',
       emailFrom: 'noreply@example.test',
       cloudinaryUploadFolder: 'voting-app',
+      publicPollBallotCeiling: 2_500,
       corsOrigins: ['https://app.example', 'https://admin.example']
     });
   });

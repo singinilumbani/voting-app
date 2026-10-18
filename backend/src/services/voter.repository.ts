@@ -12,6 +12,7 @@ export type VoterQueueRecord = Pick<
   | 'phoneNumber'
   | 'approvalStatus'
   | 'rejectionReason'
+  | 'flagReason'
   | 'blocked'
   | 'deviceFingerprintHash'
   | 'clientDeviceUuid'
@@ -32,6 +33,7 @@ export interface VoterIntegrity {
   approvedVoters: number;
   ballotsCast: number;
   abstentions: number;
+  possibleDuplicates: number;
 }
 
 export interface VoterRepositoryPort {

@@ -56,6 +56,7 @@ export interface VoterQueueDto {
   whatsappUrl: string | null;
   status: VoterRecord['approvalStatus'] | 'VOTED';
   rejectionReason: string | null;
+  flagReason: string | null;
   blocked: boolean;
   registeredAt: Date;
   approvedAt: Date | null;
@@ -228,6 +229,7 @@ export class VoterService {
         whatsappUrl: normalized.ok ? normalized.whatsappUrl : display.whatsappUrl,
         status: voter.hasVoted ? 'VOTED' : voter.approvalStatus,
         rejectionReason: voter.rejectionReason,
+        flagReason: voter.flagReason,
         blocked: voter.blocked,
         registeredAt: voter.registeredAt,
         approvedAt: voter.approvedAt,
@@ -331,11 +333,11 @@ export class VoterService {
   }
 
   async integrity(hostId: string, stationId: string) {
-    await this.requireOwnedStation(hostId, stationId);
+    const station = await this.requireOwnedStation(hostId, stationId);
     const integrity = await this.repository.voterIntegrity(stationId);
     return {
       ...integrity,
-      alert: integrity.ballotsCast > integrity.approvedVoters
+      alert: station.mode === 'CLOSED_VOTE' && integrity.ballotsCast > integrity.approvedVoters
     };
   }
 
