@@ -1,0 +1,9 @@
+{
+  "app": {
+    "title": "Voting application",
+    "description": "A placeholder for the voting application."
+  },
+  "home": {
+    "title": "Voting application placeholder"
+  }
+}
