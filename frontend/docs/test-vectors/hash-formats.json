@@ -1,0 +1,69 @@
+{
+  "sha256Hex": [
+    {
+      "input": "abc",
+      "expected": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    }
+  ],
+  "hmacHex": [
+    {
+      "secret": "vector-secret",
+      "message": "shared vector",
+      "expected": "82343c6ca1483af4bd583aa0e8adbe543136a099c228814f3078f90fd50142d4"
+    }
+  ],
+  "hashToken": [
+    {
+      "secret": "vector-secret",
+      "stationId": "station-123",
+      "normalizedToken": "K7QM2XD94HNP",
+      "expected": "f16bc796cd47ff537bf88da1af19f4afadc7165ab6134aa461a4a570b6bcdc3d"
+    }
+  ],
+  "hashIp": [
+    {
+      "secret": "vector-secret",
+      "ip": "192.0.2.1",
+      "expected": "320e74896229f75336d3e821928584e303b217f62feb4df5688a1a6488e0080e"
+    }
+  ],
+  "hashFingerprint": [
+    {
+      "secret": "vector-secret",
+      "fingerprint": "sample fingerprint",
+      "expected": "256f7f6fa72e198fb06a2604ab92d1dfe3c4bbe2ab93656c08444c23e1f2c56e"
+    }
+  ],
+  "base64url": [
+    {
+      "bytes": [0, 1, 2, 253, 254, 255],
+      "encoded": "AAEC_f7_",
+      "decoded": [0, 1, 2, 253, 254, 255]
+    }
+  ],
+  "passwordHash": {
+    "parts": {
+      "algorithm": "pbkdf2-sha256",
+      "iterations": 600000,
+      "salt": "c2FsdA",
+      "hash": "aGFzaA"
+    },
+    "formatted": "pbkdf2-sha256$600000$c2FsdA$aGFzaA",
+    "parsed": {
+      "ok": true,
+      "value": {
+        "algorithm": "pbkdf2-sha256",
+        "iterations": 600000,
+        "salt": "c2FsdA",
+        "hash": "aGFzaA"
+      }
+    },
+    "invalid": {
+      "text": "not-a-password-hash",
+      "expected": {
+        "ok": false,
+        "reason": "INVALID_FORMAT"
+      }
+    }
+  }
+}

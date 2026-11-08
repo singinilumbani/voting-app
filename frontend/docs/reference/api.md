@@ -1,0 +1,371 @@
+# Backend API reference
+
+This reference documents both the retained legacy API and the versioned multi-tenant beta API.
+
+## TypeScript skeleton endpoint
+
+### `GET /api/v1/health`
+
+- **Auth:** None.
+- **Request:** No body.
+- **Response:** `200 { "status": "ok", "env": "development|test|staging|production", "time": "<UTC ISO 8601 timestamp>" }`.
+- **Errors:** `500 { "error": { "key": "errors.internal", "requestId": string } }`.
+- **Headers:** Responses include `X-Request-Id`. Other errors use `{ "error": { "key": string, "params"?: object, "requestId": string } }`.
+
+Legacy candidate creation uses `multipart/form-data`; versioned host candidate endpoints accept JSON. Error responses use the `error` key.
+
+## Public endpoints
+
+### `GET /`
+
+- **Auth:** None.
+- **Request:** No body.
+- **Response:** `200 { "message": "Voting API is alive" }`.
+- **Errors:** None defined by the route.
+
+### `GET /api/positions`
+
+- **Auth:** None.
+- **Request:** No body.
+- **Response:** `200` with an array of positions, each containing its candidates.
+- **Errors:** `500 { "error": "Failed to fetch positions" }`.
+
+### `POST /api/auth/login`
+
+- **Auth:** None.
+- **Request:** JSON `{ "email": string, "password": string }`.
+- **Response:** `200 { "token": string }`.
+- **Errors:** `400 { "error": "Email and password are required" }`; `401 { "error": "Invalid credentials" }`; `500 { "error": "Login failed" }`.
+
+### `GET /api/vote/status`
+
+- **Auth:** A `voter_token` HTTP-only cookie is issued when absent; no bearer login is required.
+- **Request:** No body.
+- **Response:** `200` with an array of `{ "position_id": string, "candidate_id": string }` rows associated with the cookie token.
+- **Errors:** `500 { "error": "Failed to fetch vote status" }`.
+
+### `POST /api/vote`
+
+- **Auth:** The `voter_token` HTTP-only cookie, issued when absent.
+- **Request:** JSON `{ "positionId": string, "candidateId": string }`.
+- **Response:** `201 { "message": "Vote recorded", "vote": object }`.
+- **Errors:** `400 { "error": "positionId and candidateId are required" }`; `400 { "error": "Invalid candidate for this position" }`; `409 { "error": "You have already voted for this position" }`; `500 { "error": "Failed to record vote" }`.
+
+## Protected admin endpoints
+
+All endpoints under `/api/admin` require `Authorization: Bearer <token>` from the login endpoint.
+
+### `POST /api/admin/positions`
+
+- **Request:** JSON `{ "title": string }`.
+- **Response:** `201` with the created position row.
+- **Errors:** `400 { "error": "Title is required" }`; `500 { "error": "Failed to create position" }`.
+
+### `PUT /api/admin/positions/:id`
+
+- **Request:** JSON `{ "title": string }`.
+- **Response:** `200` with the updated position row.
+- **Errors:** `404 { "error": "Position not found" }`; `500 { "error": "Failed to update position" }`.
+
+### `DELETE /api/admin/positions/:id`
+
+- **Request:** No body.
+- **Response:** `200 { "message": "Position deleted" }`.
+- **Errors:** `500 { "error": "Failed to delete position" }`.
+
+### `POST /api/admin/candidates`
+
+- **Request:** `multipart/form-data` fields `name`, optional `bio`, `positionId`, and required image file `photo`.
+- **Response:** `201` with the created candidate row.
+- **Errors:** `400 { "error": "name, positionId, and photo are required" }`; `500 { "error": "Failed to create candidate" }`.
+
+### `DELETE /api/admin/candidates/:id`
+
+- **Request:** No body.
+- **Response:** `200 { "message": "Candidate deleted" }`.
+- **Errors:** `500 { "error": "Failed to delete candidate" }`.
+
+### `GET /api/admin/results`
+
+- **Request:** No body.
+- **Response:** `200` with an array of positions and their candidates, including `voteCount`.
+- **Errors:** `500 { "error": "Failed to fetch results" }`.
+
+## Authentication errors
+
+Protected admin routes return `401 { "error": "No token provided" }` when the bearer token is absent and `401 { "error": "Invalid or expired token" }` when verification fails.
+
+## Host account API
+
+Host account endpoints use `/api/v1/host/auth`. Authentication uses the `host_session` HttpOnly, Secure, SameSite=Lax cookie; session credentials are never returned in JSON. When `COOKIE_DOMAIN` is set, it is emitted as the cookie Domain (configure the shared registrable domain for the app/API subdomains). Credentialed CORS is allowed only for exact origins in `CORS_ORIGINS`; other supplied origins receive `403 errors.cors.origin_denied`. Error responses retain the common shape `{ "error": { "key": string, "params"?: object, "requestId": string } }`. Request validation errors use `errors.validation.failed`. JSON request bodies are limited to 1 MiB; oversized bodies return `413 errors.request.body_too_large`, malformed JSON returns `400 errors.request.body_invalid`, and requests exceeding 30 seconds return `408 errors.request.timeout`.
+
+The successful host DTO contains `id`, `username`, `email`, `accountType`, `plan`, `createdAt`, `purgeAt`, and `lastLoginAt`. It never contains the password hash or a raw session/reset token.
+
+### `POST /api/v1/host/auth/signup`
+
+- **Auth:** None.
+- **Request:** JSON `{ "username": string, "password": string, "email": string, "accountType": "TEMPORARY" | "LONG_TERM", "termsAccepted": true }`. Username must be 3-80 alphanumeric characters; password must be 12-256 characters.
+- **Response:** `201 { "accountType": "TEMPORARY" | "LONG_TERM" }` with a new `host_session` cookie when email verification is disabled. With `ENABLE_EMAIL_VERIFICATION=true`, returns `202 { "accountType": ... }`, sends a verification link, and does not issue a session until the address is verified.
+- **Errors:** `400 errors.validation.failed`; `409 errors.host_auth.account_conflict` for either a duplicate username or email; `503 errors.auth.not_configured`. The response key intentionally does not identify which identifier conflicted, but the conflict status still signals that one exists.
+
+### `POST /api/v1/host/auth/login`
+
+- **Auth:** None. Attempts are limited by IP and normalized username (five per 15 minutes in the database fallback; five per minute per Cloudflare location).
+- **Request:** JSON `{ "username": string, "password": string }`.
+- **Response:** `200 { "host": HostDto }` and the `host_session` cookie.
+- **Errors:** `400 errors.validation.failed`; `401 errors.host_auth.invalid_credentials` for either an unknown username, incorrect password, or unverified email; `429 errors.host_auth.rate_limited`; `503 errors.auth.not_configured`.
+
+### `POST /api/v1/host/auth/logout`
+
+- **Auth:** Optional `host_session` cookie; the cookie is cleared whether or not it is valid.
+- **Request:** No body.
+- **Response:** `204` and a cleared `host_session` cookie.
+- **Errors:** `503 errors.auth.not_configured` if the auth database is unavailable.
+
+### `GET /api/v1/host/auth/me`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** No body.
+- **Response:** `200 { "host": HostDto }`.
+- **Errors:** `401 errors.auth.unauthorized`; `503 errors.auth.not_configured`.
+
+### `POST /api/v1/host/auth/forgot-password`
+
+- **Auth:** None. Attempts are limited by IP and normalized email (five per 15 minutes in the database fallback; five per minute per Cloudflare location).
+- **Request:** JSON `{ "email": string }`.
+- **Response:** `202 { "messageKey": "status.host_auth.password_reset_if_exists" }` for both known and unknown addresses. A reset link is emailed only when an account matches.
+- **Errors:** `400 errors.validation.failed`; `429 errors.host_auth.rate_limited`; `503 errors.auth.not_configured`.
+- **Email link:** `APP_BASE_URL/reset-password?token=...`; a configured provider delivery failure is logged without changing the neutral response.
+
+### `POST /api/v1/host/auth/reset-password`
+
+- **Auth:** None.
+- **Request:** JSON `{ "token": string, "password": string }`. The token is single-use, expires after one hour, and the new password must be 12-256 characters.
+- **Response:** `200 { "messageKey": "status.host_auth.password_reset" }`.
+- **Errors:** `400 errors.validation.failed`; `400 errors.host_auth.reset_token_invalid`; `503 errors.auth.not_configured`.
+
+### `GET /api/v1/host/auth/verify-email` (verification-enabled deployments)
+
+- **Auth:** None.
+- **Request:** Query string `token=<single-use token>`.
+- **Response:** `200 { "messageKey": "status.host_auth.email_verified" }`.
+- **Errors:** `400 errors.validation.failed`; `400 errors.host_auth.verification_token_invalid`; `503 errors.auth.not_configured`.
+- **Email link:** sent to `APP_BASE_URL/verify-email?token=...`; the front end can then call this verification endpoint.
+
+### `PATCH /api/v1/host/auth/profile`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** JSON with at least one of `{ "username"?: string, "email"?: string }`.
+- **Response:** `200 { "host": HostDto, "verificationRequired": boolean }`. Changing email clears its verification timestamp; when verification is enabled, a new verification link is sent.
+- **Errors:** `400 errors.validation.failed`; `401 errors.auth.unauthorized`; `409 errors.host_auth.account_conflict` for either a duplicate username or email; `503 errors.auth.not_configured`. The generic key hides whether the username or email matched, but the conflict response still signals a collision.
+
+### `POST /api/v1/host/auth/change-password`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** JSON `{ "currentPassword": string, "newPassword": string }`.
+- **Response:** `200 { "messageKey": "status.host_auth.password_changed" }`. Other sessions are revoked; the current session remains active.
+- **Errors:** `400 errors.validation.failed`; `401 errors.host_auth.current_password_invalid`; `401 errors.auth.unauthorized`; `503 errors.auth.not_configured`.
+
+### `POST /api/v1/host/auth/change-tier`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** JSON `{ "accountType": "TEMPORARY" | "LONG_TERM", "confirm"?: "DELETE" }`. Downgrading from long-term requires `confirm: "DELETE"`.
+- **Response:** `200 { "host": HostDto }`.
+- **Errors:** `400 errors.validation.failed`; `400 errors.host_auth.tier_downgrade_confirmation_required`; `401 errors.auth.unauthorized`; `503 errors.auth.not_configured`.
+
+### `POST /api/v1/host/auth/export-data`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** No body.
+- **Response:** `200` JSON export containing the host profile, owned stations and their categories/candidates, registered voters, device records, cast votes, activity log, and payments as separate collections. Cast votes are not joined to voters.
+- **Errors:** `401 errors.auth.unauthorized`; `503 errors.auth.not_configured`.
+
+### `DELETE /api/v1/host/auth/account`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** JSON `{ "confirm": "DELETE" }`.
+- **Response:** `204` and a cleared `host_session` cookie. This permanently deletes the host and all station-owned data in the same transaction.
+- **Errors:** `400 errors.validation.failed`; `400 errors.host_auth.account_deletion_confirmation_required`; `401 errors.auth.unauthorized`; `503 errors.auth.not_configured`.
+
+## Host station and setup-wizard API
+
+All `/api/v1/host/stations` endpoints require the authenticated `host_session` cookie and verify that the host owns the station. Request-validation errors use `400 errors.validation.failed`; missing or unowned stations use `404 errors.station.not_found`; state-locked changes use `409 errors.station.locked`. The station duration settings are persisted in `registration_duration_hours` and `voting_duration_minutes`.
+
+### `POST /api/v1/host/stations`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** JSON `{ "name": string, "description"?: string | null, "mode": "PUBLIC_POLL" | "CLOSED_VOTE", "resultsVisibility"?: "IMMEDIATE" | "CONCEALED", "allowAbstain": boolean, "mobileOnly": boolean }`.
+- **Response:** `201 { "station": StationDto }`. The new station is `DRAFT`; `publicId` is a cryptographically random share identifier. Public Poll stations start with the 2,500 ballot ceiling; Closed Vote stations start with the default voter cap.
+- **Errors:** `400 errors.validation.failed`; `401 errors.auth.unauthorized`; `503 errors.station.not_configured`.
+
+### `PATCH /api/v1/host/stations/:stationId`
+
+- **Auth:** Required `host_session` cookie; station ownership required.
+- **Request:** JSON with at least one of `name`, `description`, `resultsVisibility`, `allowAbstain`, or `mobileOnly`.
+- **Response:** `200 { "station": StationDto }`.
+- **Errors:** `400 errors.validation.failed`; `401 errors.auth.unauthorized`; `404 errors.station.not_found`; `409 errors.station.locked`.
+
+### Category endpoints
+
+| Method and path                                                  | Request                                                                       | Response                              | Errors                                                                                                                |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/v1/host/stations/:stationId/categories`               | `{ "title": string }`                                                         | `201 { "category": CategoryDto }`     | `400 errors.validation.failed`; `404 errors.station.not_found`; `409 errors.station.locked`                           |
+| `PATCH /api/v1/host/stations/:stationId/categories/:categoryId`  | `{ "title": string }`                                                         | `200 { "category": CategoryDto }`     | `400 errors.validation.failed`; `404 errors.station.category_not_found`; `409 errors.station.locked`                  |
+| `PUT /api/v1/host/stations/:stationId/categories/order`          | `{ "categoryIds": string[] }` (must list every station category exactly once) | `200 { "categories": CategoryDto[] }` | `400 errors.validation.failed` (including invalid order); `404 errors.station.not_found`; `409 errors.station.locked` |
+| `DELETE /api/v1/host/stations/:stationId/categories/:categoryId` | No body                                                                       | `204`                                 | `404 errors.station.category_not_found`; `409 errors.station.locked`                                                  |
+
+All category endpoints require the host session and only mutate a station in `DRAFT`.
+
+### Candidate endpoints
+
+| Method and path                                                           | Request                                             | Response | Errors                                                                |
+| ------------------------------------------------------------------------- | --------------------------------------------------- | -------- | --------------------------------------------------------------------- |
+| `POST /api/v1/host/stations/:stationId/categories/:categoryId/candidates` | `{ "name": string, "picture"?: URL                  | null }`  | `201 { "candidate": CandidateDto }`                                   | `400 errors.validation.failed`; `404 errors.station.category_not_found`; `409 errors.station.locked`  |
+| `PATCH /api/v1/host/stations/:stationId/candidates/:candidateId`          | At least one of `{ "name"?: string, "picture"?: URL | null }`  | `200 { "candidate": CandidateDto }`                                   | `400 errors.validation.failed`; `404 errors.station.candidate_not_found`; `409 errors.station.locked` |
+| `DELETE /api/v1/host/stations/:stationId/candidates/:candidateId`         | No body                                             | `204`    | `404 errors.station.candidate_not_found`; `409 errors.station.locked` |
+
+Candidate create/edit are allowed in `DRAFT` and `REG_OPEN`; delete is allowed only in `DRAFT`. Create/edit operations append `CANDIDATE_ADDED` or `CANDIDATE_EDITED` to the station activity log.
+
+### `POST /api/v1/host/stations/:stationId/uploads/sign`
+
+- **Auth:** Required `host_session` cookie; station ownership required.
+- **Request:** No body.
+- **Response:** `200 { "cloudName": string, "apiKey": string, "timestamp": number, "signature": string, "folder": string }`. The API secret is never returned; `folder` comes from `CLOUDINARY_UPLOAD_FOLDER` (default `voting-app`).
+- **Errors:** `401 errors.auth.unauthorized`; `404 errors.station.not_found`; `409 errors.station.locked`; `503 errors.cloudinary.not_configured`.
+
+### Configuration, launch, and lifecycle endpoints
+
+| Method and path                                             | Request                                                                                                                                 | Response                                                                                                                                                                                                                                    | Errors                                                                                                                                                     |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUT /api/v1/host/stations/:stationId/registration-config`  | Closed Vote only: `{ "voterCap": integer, "durationHours"?: integer }` (`durationHours` defaults to 12; range 1-24; voter cap 2-50,000) | `200 { "station": StationDto, "warningKey"?: "warnings.station.free_tier_voter_cap" }`                                                                                                                                                      | `400 errors.validation.failed`; `400 errors.station.registration_config_mode_invalid`; `404 errors.station.not_found`; `409 errors.station.locked`         |
+| `PUT /api/v1/host/stations/:stationId/voting-config`        | `{ "startMode": "NOW"                                                                                                                   | "SCHEDULED", "startsAt"?: ISO-8601, "durationMinutes"?: integer }` (duration defaults to 720; range 15-1,440; scheduled starts must be after registration closes for Closed Vote and within seven days)                                     | `200 { "station": StationDto }`                                                                                                                            | `400 errors.validation.failed`; `400 errors.station.scheduled_start_invalid`; `400 errors.station.voting_duration_invalid`; `404 errors.station.not_found`; `409 errors.station.locked` |
+| `POST /api/v1/host/stations/:stationId/launch`              | No body                                                                                                                                 | `200 { "station": StationDto, "publicId": string, "shareLink": URL, "warningKey"?: "warnings.station.free_tier_voter_cap" }`                                                                                                                | `400 errors.validation.failed` (incomplete ballot/config); `404 errors.station.not_found`; `409 errors.station.locked`                                     |
+| `POST /api/v1/host/stations/:stationId/extend-registration` | `{ "additionalHours": positive integer }`                                                                                               | `200 { "station": StationDto }`                                                                                                                                                                                                             | `400 errors.validation.failed`; `409 errors.station.registration_not_open`; `404 errors.station.not_found`                                                 |
+| `PATCH /api/v1/host/stations/:stationId/voter-cap`          | `{ "voterCap": integer }` (must increase current cap and remain at or below 50,000)                                                     | `200 { "station": StationDto, "warningKey"?: "warnings.station.free_tier_voter_cap" }`                                                                                                                                                      | `400 errors.validation.failed`; `409 errors.station.voter_cap_locked`; `404 errors.station.not_found`                                                      |
+| `POST /api/v1/host/stations/:stationId/start-voting`        | First request `{}`; confirmation request `{ "confirm": true }`                                                                          | First response `200 { "requiresConfirmation": true, "warningKey": "warnings.station.pending_voters", "pendingCount": integer }`; after confirmation `200 { "requiresConfirmation": false, "station": StationDto, "pendingCount": integer }` | `400 errors.validation.failed`; `409 errors.station.registration_not_closed`; `404 errors.station.not_found`                                               |
+| `POST /api/v1/host/stations/:stationId/cancel`              | `{ "confirm"?: "CANCEL" }`; confirmation is required after voting opens                                                                 | `200 { "station": StationDto }`                                                                                                                                                                                                             | `400 errors.validation.failed`; `409 errors.station.cancel_confirmation_required`; `409 errors.station.invalid_transition`; `404 errors.station.not_found` |
+
+The lifecycle scheduler (M10) is responsible for moving scheduled stations into their open states at `vote_starts_at` and closing windows at their configured end. A schedule is derived from station status, `isLaunched`, and the future start time; there is no separate persisted scheduled status.
+
+### Host read endpoints
+
+| Method and path                                     | Auth and request                                                                        | Response                                                          | Errors                                                              |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `GET /api/v1/host/stations?filter=All&search=`      | Host session; `filter` is `All`, `Active`, `Scheduled`, or `Past`; optional name search | `200 { "stations": StationDto[] }` (includes derived `scheduled`) | `401 errors.auth.unauthorized`; `503 errors.station.not_configured` |
+| `GET /api/v1/host/stations/:stationId`              | Host session; owned station                                                             | `200 { "station": StationDto }` with categories and candidates    | `401 errors.auth.unauthorized`; `404 errors.station.not_found`      |
+| `GET /api/v1/host/stations/:stationId/activity-log` | Host session; owned station                                                             | `200 { "activity": ActivityDto[] }`                               | `401 errors.auth.unauthorized`; `404 errors.station.not_found`      |
+
+### `GET /api/v1/public/stations/:publicId`
+
+- **Auth:** None.
+- **Request:** No body; `publicId` is the unguessable public share identifier.
+- **Response:** `200 { "station": { "publicId", "name", "mode", "status", "regStartsAt", "regEndsAt", "voteStartsAt", "voteEndsAt", "mobileOnly", "allowAbstain", "resultsVisibility", "categories"? } }`. `categories` and candidates are included only while the voting window is open.
+- **Errors:** `404 errors.station.not_found`; `503 errors.station.not_configured`.
+
+## Closed Vote registration and approval queue
+
+Registration routes are public and addressed by the station's `publicId`; host queue routes require the `host_session` cookie and verify station ownership. A Closed Vote station accepts registration only while its status is `REG_OPEN`. Reaching the voter cap does not close registration; the M10 scheduler closes it at `reg_ends_at`. Device UUID and fingerprint matches are informational only and never block registration.
+
+### `POST /api/v1/public/stations/:publicId/register`
+
+- **Auth:** None. Registration attempts are rate limited by hashed IP and station-scoped normalized phone number. The Workers binding applies a 30-per-minute IP limit and a 5-per-minute phone limit; non-Workers use a database-backed 30-per-minute IP window and 5-per-15-minute phone window.
+- **Request:** JSON `{ "fullName": string, "phone": string, "deviceUuid": UUID, "fingerprintHash": string }`.
+- **Response:** `201 { "token": "TK-XXXX-XXXX-XXXX", "status": "PENDING" }`. The token is shown once; only its station-scoped HMAC is stored.
+- **Errors:** `400 errors.validation.failed`; `400 errors.phone.too_short|too_long|not_mobile|spreadsheet_damaged|empty|invalid_characters`; `403 errors.registration.blocked`; `409 errors.registration.closed|already_registered|attempts_exceeded|full`; `429 errors.registration.rate_limited`; `404 errors.station.not_found`; `503 errors.registration.not_configured`.
+- **Retry behavior:** A rejected number may submit corrected details up to three total attempts. The existing voter row is reused and its token hash is replaced. Pending and approved records count toward `voter_cap`; rejection frees a slot.
+
+### `POST /api/v1/public/stations/:publicId/status`
+
+- **Auth:** None. Requests are rate limited by hashed IP (40 per minute in the database fallback; the Workers binding is a 30-per-minute per-location soft limit); the recommended client polling interval is 30 seconds.
+- **Request:** JSON `{ "token": string }`.
+- **Response:** `200 { "status": "PENDING" | "APPROVED" | "REJECTED" | "REVOKED", "rejectionReason"?: string }`.
+- **Errors:** `400 errors.validation.failed`; `400 errors.token.invalid_length|invalid_characters`; `404 errors.station.not_found|registration.not_found`; `429 errors.registration.rate_limited`; `503 errors.registration.not_configured`.
+
+All endpoints below use the host session cookie and require station ownership. Voter rows and responses never expose stored token hashes.
+
+### `GET /api/v1/host/stations/:stationId/voters`
+
+- **Auth:** Required `host_session` cookie.
+- **Request:** Optional query parameters `search` (name or phone), `status` (`PENDING`, `APPROVED`, `REJECTED`, `VOTED`, `REVOKED`), `page` (default 1), and `pageSize` (default 25, maximum 100).
+- **Response:** `200 { "voters": VoterDto[], "counts": { "pending": integer, "approved": integer, "rejected": integer, "revoked": integer, "voted": integer, "cap": integer }, "total": integer, "page": integer, "pageSize": integer }`. Each row includes name, locally formatted phone (international numbers use `+` and E.164 digits), WhatsApp URL, status, rejection reason, `flagReason` message key, blocked flag, registration/approval times, `hasVoted`, and `deviceFlag` (`SAME_DEVICE_AS_N` or null). No ballot choices or tokens are returned.
+- **Errors:** `400 errors.validation.failed`; `401 errors.auth.unauthorized`; `404 errors.station.not_found`.
+
+### Host approval actions
+
+| Method and path                                                 | Auth and request                                                                      | Response                                        | Errors                                                                                             |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `POST /api/v1/host/stations/:stationId/voters/:voterId/approve` | Host session; no body                                                                 | `200 { "voterId": UUID, "status": "APPROVED" }` | `404 errors.station.not_found                                                                      | voter.not_found`; `409 errors.voter.approval_locked | not_pending` |
+| `POST /api/v1/host/stations/:stationId/voters/:voterId/reject`  | Host session; optional `{ "reason"?: string }`                                        | `200 { "voterId": UUID, "status": "REJECTED" }` | `400 errors.validation.failed`; `404 errors.station.not_found                                      | voter.not_found`; `409 errors.voter.approval_locked | not_pending` |
+| `POST /api/v1/host/stations/:stationId/voters/bulk-approve`     | Host session; `{ "voterIds": UUID[] }` or `{ "allPending": true }`                    | `200 { "updatedCount": integer }`               | `400 errors.validation.failed`; `404 errors.station.not_found`; `409 errors.voter.approval_locked` |
+| `POST /api/v1/host/stations/:stationId/voters/bulk-reject`      | Host session; `{ "voterIds": UUID[] }` or `{ "allPending": true, "reason"?: string }` | `200 { "updatedCount": integer }`               | `400 errors.validation.failed`; `404 errors.station.not_found`; `409 errors.voter.approval_locked` |
+
+Approval and rejection are allowed while station status is `REG_OPEN` or `REG_CLOSED`; both lock when voting opens. Every changed voter produces a station activity-log event.
+
+### Other voter actions and reports
+
+| Method and path                                                       | Auth and request      | Response                                                                                                                             | Errors                         |
+| --------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
+| `POST /api/v1/host/stations/:stationId/voters/:voterId/revoke`        | Host session; no body | `200 { "voterId": UUID, "status": "REVOKED" }`                                                                                       | `404 errors.station.not_found  | voter.not_found`; `409 errors.voter.action_locked | revoke_not_allowed`                                            |
+| `POST /api/v1/host/stations/:stationId/voters/:voterId/reissue-token` | Host session; no body | `200 { "token": "TK-XXXX-XXXX-XXXX" }`; old token becomes invalid immediately                                                        | `404 errors.station.not_found  | voter.not_found`; `409 errors.voter.action_locked | reissue_not_allowed`; `503 errors.registration.not_configured` |
+| `POST /api/v1/host/stations/:stationId/voters/:voterId/block-number`  | Host session; no body | `204`                                                                                                                                | `404 errors.station.not_found  | voter.not_found`                                  |
+| `GET /api/v1/host/stations/:stationId/voters/integrity`               | Host session; no body | `200 { "approvedVoters": integer, "ballotsCast": integer, "abstentions": integer, "possibleDuplicates": integer, "alert": boolean }` | `404 errors.station.not_found` |
+| `GET /api/v1/host/stations/:stationId/voters/export.csv`              | Host session; no body | `200 text/csv` with only `full_name`, `phone_number`, and `status` columns                                                           | `404 errors.station.not_found` |
+
+Revoke and reissue are available through `REG_OPEN`, `REG_CLOSED`, and `VOTE_OPEN` until voting closes. Reissue is limited to pending or approved voters who have not voted; it resets failed-token attempts and lockout state. Revoke is limited to approved voters who have not voted. These actions and block-number each write to the station activity log. Closed Vote `ballotsCast` is counted from registered-voter `has_voted` state and is never joined to `cast_votes`; Public Poll `ballotsCast` is counted from voted device records. Abstentions are counted separately from null-candidate cast-vote rows. `possibleDuplicates` counts additional Public Poll device records sharing a fingerprint with a different client UUID; it is a host hint and never blocks a ballot.
+
+## Ballot access, submission, and results
+
+Public ballot routes use the station's unguessable `publicId`; they do not require a host session. They never return an individual voter's selections or correlate a cast-vote row with a voter or device. Signed credentials are returned only to the client that needs them and must be sent in an `Authorization: Bearer <token>` header where specified. Configure both `TOKEN_HMAC_SECRET` and `SESSION_SECRET` with private values of at least 32 characters.
+
+### `POST /api/v1/public/stations/:publicId/vote/enter` (Closed Vote)
+
+- **Auth:** None. The voter token is supplied in the request body.
+- **Request:** JSON `{ "token": string, "phone"?: string }`. `phone` is optional for a stored token; when provided, it must normalize to the phone belonging to that token.
+- **Response:** `200 { "alreadyVoted": false, "ballotSession": string, "expiresAt": UTC timestamp, "ballot": [{ "id": UUID, "title": string, "candidates": [{ "id": UUID, "name": string, "imageUrl": string | null }] }] }`. The signed session is scoped to the station and voter, and expires at the earlier of two hours or the voting end. It is not written to logs.
+- **Already voted:** `409 { "error": { "key": "errors.vote.already_voted", "requestId": string }, "resultsAccessToken"?: string }`. An access token is included only for `IMMEDIATE` results.
+- **Errors:** `400 errors.phone.*`; `401 errors.vote.invalid_token|session_invalid`; `403 errors.vote.not_approved`; `409 errors.vote.wrong_mode|not_open`; `423 errors.vote.token_locked`; `429 errors.vote.rate_limited`; `503 errors.vote.not_configured`. Closed Vote wrong-phone attempts are counted on the registered-voter row; five failed attempts lock the voter for 15 minutes and ten flag the record. Per-IP limits are soft and are not identity checks.
+
+### `POST /api/v1/public/stations/:publicId/vote/submit`
+
+- **Closed Vote auth:** `Authorization: Bearer <ballotSession>` from `vote/enter`.
+- **Closed Vote request:** JSON `{ "selections": [{ "categoryId": UUID, "candidateId": UUID | "ABSTAIN" }] }`. Every category must appear exactly once; candidates must belong to the selected category; Abstain is accepted only when enabled for the station.
+- **Public Poll auth:** None. Do not send a bearer session.
+- **Public Poll request:** JSON `{ "selections": [...], "deviceUuid": UUID, "fingerprintHash": string }`, with the same ballot validation as Closed Vote. The station-scoped device UUID can cast only one ballot; a fingerprint match with another UUID is accepted.
+- **Success:** `200 { "confirmation": "status.vote.submitted", "resultsAccessToken"?: string }`. The response never echoes selections. `resultsAccessToken` is returned only for `IMMEDIATE` results.
+- **Already voted:** Closed Vote returns `409 { "error": { "key": "errors.vote.already_voted", "requestId": string }, "resultsAccessToken"?: string }`; Public Poll returns `409 errors.vote.duplicate_device`.
+- **Errors:** `400 errors.vote.partial_ballot|invalid_selection|abstain_not_allowed`; `401 errors.vote.session_invalid|session_expired`; `403 errors.vote.not_approved`; `409 errors.vote.not_open|wrong_mode|capacity_reached|duplicate_device`; `429 errors.vote.rate_limited`; `503 errors.vote.not_configured`. Public submissions are limited by IP; Closed Vote submissions additionally use a station-scoped voter key. The Workers binding uses per-location 30/IP and 5/voter per minute soft limits, while the database fallback uses 20/IP per minute and 5/voter per 15 minutes.
+
+Closed Vote ballot rows and the participation marker are committed together in one transaction after locking the station and voter rows. Public Poll locks the station row for capacity enforcement, stores the device record separately from the cast-vote rows, and never stores a device reference on a vote. Cast-vote rows contain no voter/device reference or timestamp.
+
+### `GET /api/v1/public/stations/:publicId/results`
+
+- **Auth:** For `IMMEDIATE`, `Authorization: Bearer <resultsAccessToken>` from successful submission (or the already-voted Closed Vote response) is required. For `CONCEALED`, no token is required after the station reaches `VOTE_CLOSED` or `ARCHIVED`.
+- **Request:** No body.
+- **Response:** `200` with one object per category: `{ "id": UUID, "title": string, "candidates": CandidateDto[], "results": [{ "candidateId": UUID | "ABSTAIN", "count": integer }] }`. Counts are aggregated and sorted; vote insertion order is not read.
+- **Errors:** `403 errors.vote.results_access_required`; `409 errors.vote.results_not_available`; `401 errors.vote.session_invalid|session_expired`; `404 errors.station.not_found`.
+
+## Host analytics API
+
+All analytics endpoints require the authenticated `host_session` cookie and verify that the host owns the requested station. Snapshot aggregates are cached per station for two seconds; station ownership is still checked for every request. Audit events are read only from `registered_voters`; no audit query reads or joins `cast_votes`.
+
+### `GET /api/v1/host/stations/:stationId/analytics/snapshot`
+
+- **Auth:** Required `host_session` cookie; station ownership required.
+- **Request:** No body.
+- **Response:** `200 { "stationId": UUID, "stationName": string, "stationMode": "CLOSED_VOTE" | "PUBLIC_POLL", "status": StationStatus, "state": "WAITING" | "LIVE" | "FINAL", "ballotsCast": integer, "approvedVoters": integer | null, "turnoutPercent": number | null, "possibleDuplicates": integer, "timeRemainingSeconds": integer | null, "categories": [{ "categoryId": UUID, "title": string, "candidates": [{ "candidateId": UUID, "name": string, "imageUrl": URL | null, "count": integer, "percentage": number, "isLeader": boolean, "isTie": boolean }], "abstentions": integer }], "abstentions": integer, "lastUpdated": UTC timestamp }`.
+- **Behavior:** Before `VOTE_OPEN`, `state` is `WAITING` and leaderboard counts are zero. `LIVE` applies during open voting. At `VOTE_CLOSED` or `ARCHIVED`, `state` is `FINAL`. Closed Vote turnout is ballots cast divided by approved voters, expressed as a percentage (zero when no approved voters); Public Poll has null turnout/approved-voter values and reports ballots and possible duplicates as counters. Candidate percentages include abstentions in the category denominator. Ties are flagged only for tied candidates with a nonzero top count.
+- **Errors:** `401 errors.auth.unauthorized`; `404 errors.station.not_found` for missing or unowned stations; `503 errors.analytics.not_configured`.
+
+### `GET /api/v1/host/stations/:stationId/analytics/audit`
+
+- **Auth:** Required `host_session` cookie; station ownership required.
+- **Request:** No body.
+- **Response:** `200 { "events": [{ "voterId": UUID, "fullName": string, "checkedInAt": UTC timestamp }], "limit": 500 }`, newest check-ins first. Only voters with `has_voted` and a non-null `voted_at` are included. The response contains no candidate, category, ballot-choice, or vote data.
+- **Errors:** `401 errors.auth.unauthorized`; `404 errors.station.not_found` for missing or unowned stations; `503 errors.analytics.not_configured`.
+
+### `GET /api/v1/host/stations/:stationId/analytics/export.csv`
+
+- **Auth:** Required `host_session` cookie; station ownership required.
+- **Request:** No body.
+- **Response:** `200 text/csv` with columns `category`, `candidate`, `votes`, `percentage`, `is_leader`, and `is_tie`. Abstentions appear as `ABSTAIN` rows. Spreadsheet formula-leading content is escaped.
+- **Errors:** `401 errors.auth.unauthorized`; `404 errors.station.not_found` for missing or unowned stations; `503 errors.analytics.not_configured`.
