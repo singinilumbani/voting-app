@@ -128,6 +128,12 @@
       "not_found": "The voter could not be found."
     }
   },
+  "phoneField": {
+    "preview": "We will use {phone}"
+  },
+  "codeField": {
+    "helperText": "Enter the 12-character voter token."
+  },
   "status": {
     "host_auth": {
       "email_verified": "Your email address has been verified.",

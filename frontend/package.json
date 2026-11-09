@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "format": "prettier --write \"src/**/*.{ts,tsx,json,css}\" \"scripts/**/*.mjs\" \"*.{mjs,ts,json}\" docs/README.md docs/DEVELOPMENT.md docs/screens.md \"docs/implementation-log/*.md\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,css}\" \"scripts/**/*.mjs\" \"*.{mjs,ts,json}\" docs/README.md docs/DEVELOPMENT.md docs/shared-sync.md docs/screens.md \"docs/implementation-log/*.md\"",
     "check:tokens": "node scripts/check-tokens.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "preinstall": "node scripts/require-pnpm.mjs"
