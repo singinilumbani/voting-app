@@ -22,6 +22,7 @@ export type M3ModalDialogProps = Readonly<{
   children: ReactNode;
   actions?: ReactNode;
   className?: string;
+  onBackdropClick?: () => void;
 }>;
 
 export function M3ModalDialog({
@@ -31,6 +32,7 @@ export function M3ModalDialog({
   children,
   actions,
   className = "",
+  onBackdropClick,
 }: M3ModalDialogProps) {
   const dialogRef = useRef<HTMLElement>(null);
   const titleId = useId();
@@ -83,7 +85,12 @@ export function M3ModalDialog({
 
   if (!open) return null;
   return (
-    <div className="ui-dialog-backdrop">
+    <div
+      className="ui-dialog-backdrop"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onBackdropClick?.();
+      }}
+    >
       <section
         ref={dialogRef}
         className={`ui-dialog ${className}`.trim()}

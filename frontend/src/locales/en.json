@@ -7,6 +7,153 @@
     "title": "Voting App",
     "description": "The frontend placeholder is ready."
   },
+  "global": {
+    "returnHome": "Return to home",
+    "tryAgain": "Try again",
+    "dismiss": "Dismiss",
+    "sessionExpiredTitle": "Session expired",
+    "sessionExpiredDescription": "Your session ended. Sign in again to continue.",
+    "offline": "You are offline. Some features may be unavailable.",
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "The page you requested could not be found.",
+    "forbiddenTitle": "Access denied",
+    "forbiddenDescription": "You do not have permission to view this page.",
+    "errorTitle": "Something went wrong",
+    "errorDescription": "An unexpected error occurred.",
+    "maintenanceTitle": "Maintenance in progress",
+    "maintenanceDescription": "This service is temporarily unavailable.",
+    "offlineTitle": "You are offline",
+    "offlineDescription": "Check your internet connection and try again.",
+    "initializingMocks": "Starting API mocks.",
+    "mockInitializationFailed": "API mocks could not start."
+  },
+  "navigation": {
+    "profile": "Profile",
+    "logout": "Log out",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu",
+    "floatingAction": "Create voting station"
+  },
+  "errors": {
+    "internal": "An unexpected error occurred.",
+    "auth": {
+      "not_configured": "Authentication is temporarily unavailable.",
+      "unauthorized": "Your session is invalid or has expired."
+    },
+    "analytics": {
+      "not_configured": "Analytics are temporarily unavailable."
+    },
+    "cloudinary": {
+      "not_configured": "Image uploads are temporarily unavailable."
+    },
+    "cors": {
+      "origin_denied": "This request origin is not allowed."
+    },
+    "host_auth": {
+      "account_conflict": "An account already uses those details.",
+      "account_deletion_confirmation_required": "Type DELETE to confirm account deletion.",
+      "current_password_invalid": "The current password is incorrect.",
+      "invalid_credentials": "The username or password is incorrect.",
+      "rate_limited": "Too many attempts. Try again later.",
+      "reset_token_invalid": "The password reset link is invalid or expired.",
+      "tier_downgrade_confirmation_required": "Type DELETE to confirm this account change.",
+      "verification_token_invalid": "The verification link is invalid or expired."
+    },
+    "phone": {
+      "too_short": "The phone number is too short.",
+      "too_long": "The phone number is too long.",
+      "not_mobile": "Enter a valid mobile phone number.",
+      "spreadsheet_damaged": "The phone number format is not supported.",
+      "empty": "Enter a phone number.",
+      "invalid_characters": "The phone number contains invalid characters."
+    },
+    "registration": {
+      "blocked": "Registration is unavailable for this voter.",
+      "closed": "Registration is closed.",
+      "not_configured": "Registration is temporarily unavailable.",
+      "rate_limited": "Too many registration attempts. Try again later.",
+      "already_registered": "This voter is already registered.",
+      "attempts_exceeded": "The allowed number of registration attempts was reached.",
+      "full": "The registration limit has been reached."
+    },
+    "request": {
+      "body_invalid": "The request body is invalid.",
+      "body_too_large": "The request is too large.",
+      "timeout": "The request took too long. Try again."
+    },
+    "station": {
+      "cancel_confirmation_required": "Confirmation is required before cancelling.",
+      "candidate_not_found": "The candidate could not be found.",
+      "category_not_found": "The category could not be found.",
+      "invalid_transition": "This station cannot change to that state.",
+      "locked": "This station can no longer be changed.",
+      "not_configured": "Stations are temporarily unavailable.",
+      "not_found": "The station could not be found.",
+      "registration_config_mode_invalid": "Registration settings are not valid for this station mode.",
+      "registration_not_closed": "Registration must be closed before voting starts.",
+      "registration_not_open": "Registration is not open.",
+      "scheduled_start_invalid": "The scheduled start time is invalid.",
+      "voter_cap_locked": "The voter limit can no longer be changed.",
+      "voting_duration_invalid": "The voting duration is invalid."
+    },
+    "token": {
+      "invalid_length": "The token length is invalid.",
+      "invalid_characters": "The token contains invalid characters."
+    },
+    "validation": {
+      "failed": "Check the information and try again."
+    },
+    "vote": {
+      "already_voted": "A ballot has already been submitted.",
+      "duplicate_device": "This device has already submitted a ballot.",
+      "invalid_token": "The voting token is invalid.",
+      "not_approved": "This registration has not been approved.",
+      "not_configured": "Voting is temporarily unavailable.",
+      "not_open": "Voting is not open.",
+      "partial_ballot": "Complete every category before submitting.",
+      "rate_limited": "Too many voting attempts. Try again later.",
+      "results_access_required": "You do not have access to these results.",
+      "results_not_available": "Results are not available yet.",
+      "session_invalid": "The voting session is invalid.",
+      "session_expired": "The voting session has expired.",
+      "token_locked": "This token is temporarily locked.",
+      "wrong_mode": "This action is unavailable for this voting mode.",
+      "invalid_selection": "The selected candidate is not valid.",
+      "abstain_not_allowed": "Abstaining is not allowed for this vote.",
+      "capacity_reached": "The voting capacity has been reached."
+    },
+    "voter": {
+      "action_locked": "This voter action is currently locked.",
+      "approval_locked": "Voter approval is currently locked.",
+      "not_found": "The voter could not be found."
+    }
+  },
+  "status": {
+    "host_auth": {
+      "email_verified": "Your email address has been verified.",
+      "password_changed": "Your password has been changed.",
+      "password_reset": "Your password has been reset.",
+      "password_reset_if_exists": "If an account matches that email, a reset link has been sent."
+    },
+    "vote": {
+      "submitted": "Your ballot has been submitted."
+    }
+  },
+  "translationExamples": {
+    "greeting": "Hello, {name}.",
+    "voterCount": {
+      "one": "{count} voter",
+      "other": "{count} voters"
+    }
+  },
+  "mocks": {
+    "hostId": "00000000-0000-4000-8000-000000000001",
+    "hostUsername": "demo-host",
+    "hostEmail": "demo@example.test",
+    "stationName": "Sample Station",
+    "timestamp": "2026-01-01T00:00:00.000Z",
+    "nextDayTimestamp": "2026-01-02T00:00:00.000Z"
+  },
   "dev": {
     "title": "Component Sheet",
     "description": "Reusable design system components and interaction states.",

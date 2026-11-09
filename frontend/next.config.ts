@@ -1,8 +1,12 @@
 import type { NextConfig } from "next";
+import { getServerEnv } from "./src/lib/env";
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  experimental: {
+    authInterrupts: true,
+  },
   images: {
     remotePatterns: [
       {
@@ -28,6 +32,20 @@ const nextConfig: NextConfig = {
             value: "camera=(), microphone=(), geolocation=()",
           },
         ],
+      },
+    ];
+  },
+  async rewrites() {
+    const env = getServerEnv();
+    if (env.NEXT_PUBLIC_API_MODE !== "proxy" || !env.API_PROXY_TARGET) {
+      return [];
+    }
+
+    const target = env.API_PROXY_TARGET.replace(/\/+$/, "");
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination: `${target}/api/v1/:path*`,
       },
     ];
   },

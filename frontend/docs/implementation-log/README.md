@@ -5,3 +5,4 @@ Frontend implementation entries are recorded here using the format
 
 - [F0 — Reset and scaffold](./F0-reset-and-scaffold.md)
 - [F1 — Design system](./F1-design-system.md)
+- [F2 — Frontend infrastructure](./F2-infrastructure.md)

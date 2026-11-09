@@ -32,22 +32,50 @@ tooling, and the active frontend documentation files.
 ## Environment
 
 Create `.env.local` in the frontend root for local-only values. Do not commit
-this file. The API base URL to use when frontend API integration is added is:
+this file. Select one API mode:
 
 ```dotenv
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8787
+# Same-origin requests through the Next.js rewrite
+NEXT_PUBLIC_API_MODE=proxy
+API_PROXY_TARGET=http://localhost:8787
+
+# Or call the API origin directly from the browser
+# NEXT_PUBLIC_API_MODE=direct
+# NEXT_PUBLIC_API_URL=http://localhost:8787
+
+# Set true to use the built-in MSW browser handlers during development
+NEXT_PUBLIC_ENABLE_MOCKS=false
+NEXT_PUBLIC_ENV=development
 ```
 
-Replace the example URL with the local backend URL printed by its development
-server. This variable is not consumed by the F0 placeholder yet.
+Replace the example host/port with the local API URL printed by the backend
+development server. `API_PROXY_TARGET` is server-only and is used only in proxy
+mode. Next.js rewrites `/api/v1/*` to that target; rewritten responses,
+including `Set-Cookie`, are returned through the same-origin response.
+`NEXT_PUBLIC_API_URL` is required in direct mode and must be an origin accepted
+by the backend's credentialed CORS allowlist.
+
+## API mocks
+
+Set `NEXT_PUBLIC_ENABLE_MOCKS=true` in `.env.local` and restart `pnpm dev` to
+start the MSW browser worker. The worker serves host auth and public station
+configuration examples without requiring the backend. Set it to `false` (or
+remove it) to use the configured proxy/direct API. Unhandled requests bypass
+MSW, allowing both mocked and real requests to coexist. Vitest uses the same
+handlers through the Node MSW server.
 
 ## Running against the backend
 
 Start the backend using its own development instructions, then set
-`NEXT_PUBLIC_API_BASE_URL` in `.env.local` to its base URL and restart the
-frontend. The documented health endpoint is
-`/api/v1/health` (see [the API reference](./reference/api.md)). F0 does not make
-API requests or configure a proxy; backend rewrites are reserved for F2.
+Set `API_PROXY_TARGET` when using proxy mode, or set `NEXT_PUBLIC_API_URL` and
+`NEXT_PUBLIC_API_MODE=direct` for direct mode, then restart the frontend. The
+documented health endpoint is `/api/v1/health` (see
+[the API reference](./reference/api.md)).
+
+Server components can use `serverApiFetch` from `src/lib/api/server.ts`; it
+forwards the incoming request's `Cookie` header. The API proxy target is read
+only by the Next.js server configuration and is not exposed as a public
+environment variable.
 
 ## Project conventions
 
