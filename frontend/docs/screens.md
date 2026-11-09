@@ -1,6 +1,6 @@
 # Routes and screens
 
-No product screens have been implemented yet. Add entries as routes and screens are defined.
-
-| Route | Screen | Status | Notes |
-|---|---|---|---|
+| Route             | Screen           | Status                                        |
+| ----------------- | ---------------- | --------------------------------------------- |
+| `/`               | Home placeholder | Scaffold only; product screen is not designed |
+| `/dev/components` | Component Sheet  | Development-only component and state showcase |

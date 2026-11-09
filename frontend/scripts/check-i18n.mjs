@@ -1,1 +1,1 @@
-console.log('implemented in F2');
+console.log("implemented in F2");

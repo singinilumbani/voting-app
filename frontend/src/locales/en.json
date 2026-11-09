@@ -1,9 +1,117 @@
 {
-  "app": {
-    "title": "Voting application",
-    "description": "A placeholder for the voting application."
+  "metadata": {
+    "title": "Voting App",
+    "description": "Frontend starter for a voting platform."
   },
   "home": {
-    "title": "Voting application placeholder"
+    "title": "Voting App",
+    "description": "The frontend placeholder is ready."
+  },
+  "dev": {
+    "title": "Component Sheet",
+    "description": "Reusable design system components and interaction states.",
+    "buttons": {
+      "title": "Buttons",
+      "filled": "Filled",
+      "tonal": "Tonal",
+      "outlined": "Outlined",
+      "text": "Text",
+      "destructive": "Destructive",
+      "floating": "Create",
+      "loading": "Loading",
+      "disabled": "Disabled",
+      "leading": "Leading",
+      "trailing": "Trailing"
+    },
+    "fields": {
+      "title": "Fields",
+      "name": "Name",
+      "nameHelp": "Enter a display name.",
+      "nameError": "Name is required.",
+      "password": "Password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "number": "Voter count",
+      "dateTime": "Voting starts",
+      "select": "Mode",
+      "selectPlaceholder": "Choose a mode",
+      "publicPoll": "Public poll",
+      "closedVote": "Closed vote",
+      "toggle": "Mobile-only voting",
+      "toggleHelp": "Restrict voting to mobile devices.",
+      "checkbox": "Accept the terms",
+      "checkboxError": "Acceptance is required.",
+      "disabled": "Disabled field"
+    },
+    "dialogs": {
+      "title": "Dialogs and sheets",
+      "openConfirm": "Open confirmation",
+      "confirmTitle": "Confirm action",
+      "confirmDescription": "This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "openNotice": "Open notice",
+      "noticeTitle": "Notice",
+      "noticeBody": "Your changes are saved.",
+      "close": "Close",
+      "openForm": "Open form",
+      "formTitle": "Form dialog",
+      "openTyped": "Open typed confirmation",
+      "typedTitle": "Type to confirm",
+      "typedDescription": "Enter the confirmation word to continue.",
+      "typedWord": "CONFIRM",
+      "typedInput": "Confirmation word",
+      "openSheet": "Open bottom sheet",
+      "sheetTitle": "Bottom sheet",
+      "sheetBody": "Sheet content for a mobile viewport.",
+      "modalTitle": "Accessible modal",
+      "modalBody": "Use Escape to close and Tab to move focus."
+    },
+    "feedback": {
+      "title": "Cards and feedback",
+      "cardTitle": "Card surface",
+      "cardBody": "A reusable elevated surface.",
+      "info": "Information banner",
+      "warning": "Warning banner",
+      "error": "Error banner",
+      "statusNeutral": "Pending",
+      "statusSuccess": "Active",
+      "statusWarning": "Paused",
+      "statusError": "Failed",
+      "chip": "Selected filter",
+      "chipRemove": "Remove filter",
+      "skeleton": "Loading content",
+      "emptyTitle": "No items yet",
+      "emptyDescription": "Items will appear here when available.",
+      "progress": "Voting progress",
+      "snackbar": "Changes saved",
+      "showSnackbar": "Show snackbar",
+      "copyLabel": "Share link",
+      "copyUrl": "https://example.test/vote",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "copyError": "Unable to copy link."
+    },
+    "navigation": {
+      "title": "Navigation and layout",
+      "tabs": "Component examples",
+      "firstTab": "Overview",
+      "secondTab": "Details",
+      "firstContent": "Overview panel content.",
+      "secondContent": "Details panel content.",
+      "pageTitle": "Page heading",
+      "pageDescription": "A reusable title and action area.",
+      "pageAction": "Action",
+      "authTitle": "Sign in",
+      "authDescription": "Access your account.",
+      "authField": "Username",
+      "authFooter": "Account access is protected."
+    },
+    "icons": {
+      "title": "Icons",
+      "check": "Check circle",
+      "visibility": "Visibility",
+      "copy": "Copy"
+    }
   }
 }

@@ -1,5 +1,3 @@
-import { HttpResponse, http } from 'msw';
+import type { RequestHandler } from "msw";
 
-export const handlers = [
-  http.get(/\/api\/mock\/example$/, () => HttpResponse.json({ status: 'ok' })),
-];
+export const handlers: RequestHandler[] = [];

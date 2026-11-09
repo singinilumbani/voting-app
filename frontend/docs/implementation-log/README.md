@@ -1,3 +1,7 @@
 # Implementation log
 
-Implementation logs record the goal, changes, decisions, validation, manual steps, and open questions for each frontend module.
+Frontend implementation entries are recorded here using the format
+`F<number>-<short-name>.md`, in feature order.
+
+- [F0 — Reset and scaffold](./F0-reset-and-scaffold.md)
+- [F1 — Design system](./F1-design-system.md)
