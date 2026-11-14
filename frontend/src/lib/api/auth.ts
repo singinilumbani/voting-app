@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { apiFetch } from "./client";
+import { apiFetch, apiFetchWithStatus } from "./client";
 import {
   authStatusSchema,
   hostResponseSchema,
@@ -49,10 +49,17 @@ export const authApi = {
     });
   },
   signup(input: SignupRequest) {
-    return apiFetch("/api/v1/host/auth/signup", requestAcceptedSchema, {
-      method: "POST",
-      body: signupSchema.parse(input),
-    });
+    return apiFetchWithStatus(
+      "/api/v1/host/auth/signup",
+      requestAcceptedSchema,
+      {
+        method: "POST",
+        body: signupSchema.parse(input),
+      },
+    ).then(({ data, status }) => ({
+      ...data,
+      verificationRequired: status === 202,
+    }));
   },
   me(): Promise<{ host: HostDto }> {
     return apiFetch("/api/v1/host/auth/me", meResponseSchema);

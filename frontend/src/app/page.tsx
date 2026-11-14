@@ -1,11 +1,5 @@
-import { PlaceholderPage } from "@/components/PlaceholderPage";
-import messages from "@/locales/en.json";
+import { LandingPage } from "@/components/auth/LandingPage";
 
 export default function HomePage() {
-  return (
-    <PlaceholderPage
-      title={messages.home.title}
-      description={messages.home.description}
-    />
-  );
+  return <LandingPage />;
 }

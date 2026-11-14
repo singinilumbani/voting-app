@@ -7,3 +7,4 @@ Frontend implementation entries are recorded here using the format
 - [F1 — Design system](./F1-design-system.md)
 - [F2 — Frontend infrastructure](./F2-infrastructure.md)
 - [F3 — Shared utilities](./F3-shared-utilities.md)
+- [F4 — Landing and host auth](./F4-landing-and-host-auth.md)

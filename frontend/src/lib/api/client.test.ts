@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { ApiError, apiFetch } from "./client";
+import { ApiError, apiFetch, apiFetchWithStatus } from "./client";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -53,5 +53,27 @@ describe("API client", () => {
       expect.stringContaining("/api/v1/test"),
       expect.objectContaining({ credentials: "include" }),
     );
+  });
+
+  it("preserves successful HTTP status for verification-gated signup flows", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ accountType: "LONG_TERM" }), {
+          status: 202,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    await expect(
+      apiFetchWithStatus(
+        "/api/v1/host/auth/signup",
+        z.object({ accountType: z.enum(["TEMPORARY", "LONG_TERM"]) }),
+      ),
+    ).resolves.toEqual({
+      data: { accountType: "LONG_TERM" },
+      status: 202,
+    });
   });
 });

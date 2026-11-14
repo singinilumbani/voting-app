@@ -88,7 +88,16 @@ export async function apiFetch<T>(
   schema: z.ZodType<T>,
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  return apiFetchWithBase(path, schema, options);
+  const result = await apiFetchWithStatus(path, schema, options);
+  return result.data;
+}
+
+export async function apiFetchWithStatus<T>(
+  path: string,
+  schema: z.ZodType<T>,
+  options: ApiRequestOptions = {},
+): Promise<Readonly<{ data: T; status: number }>> {
+  return apiFetchWithBaseAndStatus(path, schema, options);
 }
 
 export async function apiFetchWithBase<T>(
@@ -97,6 +106,21 @@ export async function apiFetchWithBase<T>(
   options: ApiRequestOptions = {},
   baseUrl?: string,
 ): Promise<T> {
+  const result = await apiFetchWithBaseAndStatus(
+    path,
+    schema,
+    options,
+    baseUrl,
+  );
+  return result.data;
+}
+
+export async function apiFetchWithBaseAndStatus<T>(
+  path: string,
+  schema: z.ZodType<T>,
+  options: ApiRequestOptions = {},
+  baseUrl?: string,
+): Promise<Readonly<{ data: T; status: number }>> {
   const headers = new Headers(options.headers);
   const { body: inputBody, ...requestOptions } = options;
   let body: BodyInit | undefined;
@@ -118,14 +142,14 @@ export async function apiFetchWithBase<T>(
 
   if (!response.ok) return throwApiError(response);
   if (response.status === 204) {
-    return schema.parse(undefined);
+    return { data: schema.parse(undefined), status: response.status };
   }
 
   const contentType = response.headers.get("content-type") ?? "";
   const payload: unknown = contentType.includes("application/json")
     ? await response.json()
     : await response.text();
-  return schema.parse(payload);
+  return { data: schema.parse(payload), status: response.status };
 }
 
 export async function apiFetchText(
