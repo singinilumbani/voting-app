@@ -2,7 +2,7 @@
 
 ## Date
 
-2026-11-09
+2026-11-14
 
 ## Goal
 
@@ -53,13 +53,17 @@ host phone-list hook.
 - `pnpm check:tokens`
 - `pnpm check:i18n`
 - `pnpm build`
+- `pnpm typecheck` (rerun after build)
 - `pnpm exec vitest run src/lib/shared.test.ts src/components/ui/shared-fields.test.tsx src/lib/host/use-phone-list.test.tsx`
 - `pnpm exec vitest run src/components/ui/shared-fields.test.tsx`
 - `git status --short`
+- `git diff --check`
 
 ## Test results
 
-- TypeScript typecheck: passed.
+- TypeScript typecheck: passed on rerun after build. The initial parallel run
+  raced with Next.js regenerating `.next/types` and failed because generated
+  declaration files were temporarily absent.
 - ESLint: passed.
 - Vitest: passed, 11 test files and 52 tests.
 - All phone normalization, token normalization, and hash-format JSON vectors
@@ -68,6 +72,7 @@ host phone-list hook.
 - i18n check: passed, 26 literal translation calls checked.
 - Production build: passed. Next.js emitted the existing middleware-to-proxy
   deprecation warning.
+- Final `git diff --check`: passed.
 - The first vector-test run exposed a test path resolution issue, which was
   corrected to resolve the JSON fixtures from the frontend workspace root.
   The full final suite passed.
