@@ -3,6 +3,15 @@
     "title": "Voting App",
     "description": "A clear way to host and join community votes."
   },
+  "common": {
+    "back": "Back",
+    "next": "Next",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
   "home": {
     "title": "Voting App",
     "description": "A clearer, more accessible way to host and join a vote.",
@@ -120,6 +129,138 @@
     "confirmTierButton": "Confirm change",
     "profileActions": "Profile actions",
     "errorTitle": "Unable to complete this action."
+  },
+  "station": {
+    "loading": "Loading polling station information.",
+    "dashboard": "Back to dashboard",
+    "progress": "Polling station setup progress",
+    "savedAsDraft": "Saved as draft",
+    "name": "Station name",
+    "description": "Description",
+    "mode": {
+      "title": "Voting mode",
+      "public": "Public Poll",
+      "publicDescription": "Anyone with the public link can vote without registering.",
+      "closed": "Closed Vote",
+      "closedDescription": "Voters register and wait for host approval before voting."
+    },
+    "resultsVisibility": "Results visibility",
+    "results": {
+      "immediate": "Immediate live results",
+      "concealed": "Concealed until voting ends"
+    },
+    "allowAbstain": "Allow voters to abstain",
+    "mobileOnly": "Mobile devices only",
+    "categoryName": "Position or category name",
+    "addCategory": "Add position",
+    "moveCategoryUp": "Move {name} up",
+    "moveCategoryDown": "Move {name} down",
+    "needsMoreCandidates": "Add at least two candidates",
+    "addCandidate": "Add candidate",
+    "addCandidateTo": "Add candidate to {name}",
+    "editCandidate": "Edit candidate",
+    "candidateName": "Candidate name",
+    "candidateImage": "Image of {name}",
+    "imageFile": "Choose candidate image",
+    "imagePreview": "Square crop preview",
+    "removeImage": "Remove image",
+    "uploading": "Uploading image",
+    "uploadFailureTitle": "Image upload failed",
+    "uploadFailureDescription": "The image could not be uploaded. Try again.",
+    "retryUpload": "Retry Upload",
+    "voterCount": "Estimated Voter Count",
+    "largeVoterListNotice": "Lists above 2,500 voters may be slow on the free beta infrastructure.",
+    "registrationDuration": "Registration duration in hours",
+    "votingStart": "Voting window start",
+    "openNow": "Open now",
+    "scheduleStart": "Schedule a start",
+    "scheduledStart": "Scheduled start date and time",
+    "votingDuration": "Voting duration in minutes",
+    "reviewTitle": "Review polling station",
+    "positionCount": "Positions",
+    "hoursValue": {
+      "one": "{count} hour",
+      "other": "{count} hours"
+    },
+    "minutesValue": {
+      "one": "{count} minute",
+      "other": "{count} minutes"
+    },
+    "reviewAndLaunch": "Review and launch",
+    "launch": "Launch Polling Station",
+    "launchConfirmTitle": "Launch polling station?",
+    "launchConfirmDescription": "Review the station details before making this voting session available.",
+    "launchSuccessTitle": "Polling station launched",
+    "launchSuccessDescription": "Share this link with voters. The QR code is ready to scan.",
+    "shareLink": "Polling station link",
+    "copyLink": "Copy link",
+    "copiedLink": "Copied",
+    "copyError": "Unable to copy link.",
+    "returnToDashboard": "Return to dashboard",
+    "resumeTitle": "Resume or discard draft",
+    "resumeDescription": "A saved polling station draft was found. Resume setup or discard the saved browser progress.",
+    "resumeDraft": "Resume draft",
+    "discardDraft": "Discard draft",
+    "unsavedTitle": "Unsaved changes",
+    "unsavedDescription": "You have changes that have not been saved to the polling station. Leave this setup?",
+    "stay": "Stay",
+    "leave": "Leave setup",
+    "deleteCategoryTitle": "Delete this position?",
+    "deleteCategoryDescription": "This position and its candidates will be removed from the draft polling station.",
+    "removeCandidateTitle": "Remove this candidate?",
+    "removeCandidateDescription": "This candidate will be removed from the draft polling station.",
+    "uploadingLabel": "Upload progress",
+    "keyDate": "Key date",
+    "registeredCount": {
+      "one": "{count} voter registered",
+      "other": "{count} voters registered"
+    },
+    "ballotsCast": {
+      "one": "{count} ballot cast",
+      "other": "{count} ballots cast"
+    },
+    "openStation": "Open polling station {name}",
+    "publicPoll": "Public Poll",
+    "closedVote": "Closed Vote",
+    "banners": "Account notices",
+    "temporaryPurgeWarning": "Your temporary account and its data will be deleted in {days} days. Export any reports you need before then.",
+    "inactivityWarning": "You have been inactive for five months. Sign in now to keep your Long-Term Account active.",
+    "paymentRequired": "Payment is required before this polling station can open.",
+    "filterBy": "Filter polling stations",
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "scheduled": "Scheduled",
+      "past": "Past"
+    },
+    "search": "Search polling stations",
+    "noFilteredResults": "No matching polling stations",
+    "noFilteredResultsDescription": "Try a different filter or search term.",
+    "validation": {
+      "name": "Enter a station name.",
+      "categoryName": "Enter a position name.",
+      "candidateName": "Enter a candidate name.",
+      "minimumCategories": "Add at least one position to continue.",
+      "minimumCandidates": "Add at least two candidates to every position to continue.",
+      "registration": "Enter a voter count from 2 to 50,000 and a registration duration from 1 to 24 hours.",
+      "scheduledStart": "Choose a scheduled start after registration closes and within seven days."
+    },
+    "draft": {
+      "invalid": "The saved draft could not be read. Start again or continue with the station on the server.",
+      "storageUnavailable": "Draft progress could not be saved in this browser."
+    },
+    "image": {
+      "too_large": "This image file is too large. Choose a smaller image and try again.",
+      "upload_failed": "The image could not be uploaded. Try again.",
+      "processing_failed": "The image could not be prepared. Choose another image."
+    },
+    "steps": {
+      "basics": "Station Basics",
+      "positions": "Positions",
+      "nominees": "Nominees",
+      "registration": "Registration",
+      "voting": "Voting Window"
+    }
   },
   "legal": {
     "placeholder": "This page will contain the complete policy text before public launch."
@@ -252,6 +393,19 @@
     "helperText": "Enter the 12-character voter token."
   },
   "status": {
+    "station": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "reg_open": "Registration open",
+      "registration_open": "Registration open",
+      "reg_closed": "Registration closed",
+      "registration_closed": "Registration closed",
+      "vote_open": "Voting open",
+      "vote_closed": "Voting closed",
+      "archived": "Archived",
+      "purged": "Purged",
+      "cancelled": "Cancelled"
+    },
     "host_auth": {
       "email_verified": "Your email address has been verified.",
       "password_changed": "Your password has been changed.",

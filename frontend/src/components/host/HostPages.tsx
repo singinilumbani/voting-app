@@ -7,7 +7,6 @@ import type { HostDto } from "@/lib/api/schemas";
 import { authApi } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { AppShell } from "@/components/layout/AppShell";
-import { Icon } from "@/components/ui/Icon";
 import {
   M3Button,
   M3Card,
@@ -19,12 +18,13 @@ import { M3ModalDialog, TypedConfirmDialog } from "@/components/ui/dialogs";
 import { useT } from "@/lib/i18n";
 import { sessionQueryKey, useLogout, useSession } from "@/lib/session";
 import type { AccountType } from "@/components/auth/types";
+import { StationDashboard } from "@/components/host/StationDashboard";
 
 function requestError(error: unknown): string {
   return error instanceof ApiError ? error.key : "errors.internal";
 }
 
-function HostShell({ children }: Readonly<{ children: ReactNode }>) {
+export function HostShell({ children }: Readonly<{ children: ReactNode }>) {
   const t = useT();
   const router = useRouter();
   const logout = useLogout();
@@ -60,7 +60,7 @@ function HostShell({ children }: Readonly<{ children: ReactNode }>) {
   );
 }
 
-function SessionGate({ children }: Readonly<{ children: ReactNode }>) {
+export function SessionGate({ children }: Readonly<{ children: ReactNode }>) {
   const t = useT();
   const router = useRouter();
   const session = useSession();
@@ -81,24 +81,20 @@ function SessionGate({ children }: Readonly<{ children: ReactNode }>) {
 }
 
 export function HostDashboardPage() {
-  const t = useT();
   return (
     <SessionGate>
       <HostShell>
-        <main className="host-page">
-          <PageHeader title={t("host.dashboardTitle")} />
-          <M3Card>
-            <div className="host-empty-state">
-              <Icon name="how_to_vote" />
-              <h2>{t("host.emptyTitle")}</h2>
-              <p>{t("host.emptyDescription")}</p>
-              <M3Button disabled>{t("host.createSession")}</M3Button>
-            </div>
-          </M3Card>
-        </main>
+        <DashboardContent />
       </HostShell>
     </SessionGate>
   );
+}
+
+function DashboardContent() {
+  const session = useSession();
+  return session.status === "authenticated" ? (
+    <StationDashboard host={session.host} />
+  ) : null;
 }
 
 type HostProfileSettingsProps = Readonly<{

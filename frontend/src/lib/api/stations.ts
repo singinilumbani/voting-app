@@ -9,8 +9,10 @@ import {
   stationCategoryResponseSchema,
   stationListSchema,
   stationResponseSchema,
+  uploadSignatureSchema,
   type StationDto,
 } from "./schemas";
+import { STATION_LIMITS } from "@/lib/shared/station-constants";
 
 const idSchema = z.string().min(1);
 const stationCreateSchema = z.object({
@@ -34,13 +36,27 @@ const candidateUpdateSchema = candidateInputSchema
   .partial()
   .refine((value) => Object.keys(value).length > 0);
 const registrationConfigSchema = z.object({
-  voterCap: z.number().int().min(2).max(50_000),
-  durationHours: z.number().int().min(1).max(24).optional(),
+  voterCap: z
+    .number()
+    .int()
+    .min(STATION_LIMITS.registration.minimumVoters)
+    .max(STATION_LIMITS.registration.maximumVoters),
+  durationHours: z
+    .number()
+    .int()
+    .min(STATION_LIMITS.registration.minimumDurationHours)
+    .max(STATION_LIMITS.registration.maximumDurationHours)
+    .optional(),
 });
 const votingConfigSchema = z.object({
   startMode: z.enum(["NOW", "SCHEDULED"]),
   startsAt: z.string().datetime().optional(),
-  durationMinutes: z.number().int().min(15).max(1440).optional(),
+  durationMinutes: z
+    .number()
+    .int()
+    .min(STATION_LIMITS.voting.minimumDurationMinutes)
+    .max(STATION_LIMITS.voting.maximumDurationMinutes)
+    .optional(),
 });
 
 export type StationCreateInput = z.infer<typeof stationCreateSchema>;
@@ -181,6 +197,14 @@ export const stationsApi = {
     return apiFetch(
       `/api/v1/host/stations/${encodeURIComponent(id)}/launch`,
       launchStationResponseSchema,
+      { method: "POST" },
+    );
+  },
+  signUpload(stationId: string) {
+    const id = idSchema.parse(stationId);
+    return apiFetch(
+      `/api/v1/host/stations/${encodeURIComponent(id)}/uploads/sign`,
+      uploadSignatureSchema,
       { method: "POST" },
     );
   },

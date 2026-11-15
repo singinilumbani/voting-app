@@ -14,7 +14,9 @@
 | `/verify-email`              | Verify email               | Calls the verification endpoint with the email token                                    |
 | `/verify-email-verified`     | Verification success       | Sign-in link                                                                            |
 | `/verification-link-expired` | Expired verification link  | Shown for an invalid or expired verification token                                      |
-| `/host`                      | Host dashboard empty state | Session guarded; profile and logout navigation                                          |
+| `/host`                      | Host dashboard             | Empty and populated states, station filters/search, account warnings, and draft resume   |
+| `/host/stations/new`         | Station setup wizard       | Create a draft, configure positions and nominees, registration, and launch               |
+| `/host/stations/[id]/edit`   | Edit station wizard        | Resume an existing DRAFT station setup                                                   |
 | `/host/profile`              | Host profile               | Profile, password, tier, export, and account deletion actions                           |
 | `/dev/components`            | Component Sheet            | Development-only component and state showcase                                           |
 | `/maintenance`               | Maintenance notice         | Temporary service availability notice                                                   |

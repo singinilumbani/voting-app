@@ -52,6 +52,13 @@ export const stationSchema = z
     mobileOnly: z.boolean().optional(),
     allowAbstain: z.boolean().optional(),
     resultsVisibility: z.enum(["IMMEDIATE", "CONCEALED"]).optional(),
+    scheduled: z.boolean().optional(),
+    ballotsCast: z.number().int().nonnegative().optional(),
+    registeredCount: z.number().int().nonnegative().optional(),
+    approvedVoters: z.number().int().nonnegative().nullable().optional(),
+    voterCap: z.number().int().nonnegative().optional(),
+    registrationDurationHours: z.number().int().positive().optional(),
+    votingDurationMinutes: z.number().int().positive().optional(),
     categories: z.array(categorySchema).optional(),
   })
   .passthrough();
@@ -209,6 +216,13 @@ export const launchStationResponseSchema = z.object({
   publicId: z.string(),
   shareLink: z.string().url(),
   warningKey: z.string().optional(),
+});
+export const uploadSignatureSchema = z.object({
+  cloudName: z.string().min(1),
+  apiKey: z.string().min(1),
+  timestamp: z.number().int().positive(),
+  signature: z.string().min(1),
+  folder: z.string().min(1),
 });
 export const registrationConfigResponseSchema = z.object({
   station: stationSchema,
