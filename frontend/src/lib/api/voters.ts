@@ -5,6 +5,7 @@ import {
   voterActionSchema,
   voterIntegritySchema,
   voterTokenSchema,
+  voterExportSchema,
   votersResponseSchema,
 } from "./schemas";
 
@@ -113,6 +114,8 @@ export const votersApi = {
     );
   },
   exportCsv(stationId: string) {
-    return apiFetchText(`${stationPath(stationId)}/voters/export.csv`);
+    return apiFetchText(`${stationPath(stationId)}/voters/export.csv`).then(
+      (csv) => voterExportSchema.parse(csv),
+    );
   },
 };

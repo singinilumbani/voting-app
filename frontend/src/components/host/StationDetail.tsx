@@ -39,6 +39,7 @@ import { useT } from "@/lib/i18n";
 import { useCurrentTime } from "@/lib/host/use-current-time";
 import { STATION_LIMITS } from "@/lib/shared/station-constants";
 import { CandidateEditorDialog } from "./CandidateEditorDialog";
+import { ApprovalQueue } from "./ApprovalQueue";
 import { HostShell, SessionGate } from "./HostPages";
 
 const LazyQRCode = dynamic(
@@ -178,14 +179,22 @@ function entryTimestamp(entry: Record<string, unknown>): string | null {
 function RouteTabs({
   stationId,
   activeTab,
-}: Readonly<{ stationId: string; activeTab: StationDetailTab }>) {
+  stationMode,
+}: Readonly<{
+  stationId: string;
+  activeTab: StationDetailTab;
+  stationMode: StationDto["mode"];
+}>) {
   const t = useT();
+  const visibleTabs = tabDefinitions.filter(
+    (tab) => tab.id !== "voters" || stationMode === "CLOSED_VOTE",
+  );
   return (
     <Tabs
       className="station-detail__tabs"
       activeTab={activeTab}
       label={t("station.detail.tabNavigation")}
-      tabs={tabDefinitions.map((tab) => ({
+      tabs={visibleTabs.map((tab) => ({
         id: tab.id,
         label: t(tab.labelKey),
         href: `/host/stations/${encodeURIComponent(stationId)}/${tab.id}`,
@@ -1174,7 +1183,11 @@ export function StationDetail({
       />
       {error && <M3Banner variant="error">{t(error)}</M3Banner>}
       {notice && <M3Banner variant="info">{t(notice)}</M3Banner>}
-      <RouteTabs stationId={stationId} activeTab={activeTab} />
+      <RouteTabs
+        stationId={stationId}
+        activeTab={activeTab}
+        stationMode={station.mode}
+      />
       {activeTab === "overview" && <OverviewTab station={station} />}
       {activeTab === "candidates" && (
         <CandidatesTab
@@ -1182,13 +1195,18 @@ export function StationDetail({
           onChange={(updated) => replaceStation(updated)}
         />
       )}
-      {activeTab === "voters" && (
-        <PlaceholderTab>
-          {station.mode === "CLOSED_VOTE"
-            ? t("station.detail.votersPlaceholder")
-            : t("station.detail.votersPublicPoll")}
-        </PlaceholderTab>
-      )}
+      {activeTab === "voters" &&
+        (station.mode === "CLOSED_VOTE" ? (
+          <ApprovalQueue
+            stationId={stationId}
+            stationStatus={status}
+            voterCap={station.voterCap}
+          />
+        ) : (
+          <PlaceholderTab>
+            {t("station.detail.votersPublicPoll")}
+          </PlaceholderTab>
+        ))}
       {activeTab === "analytics" && (
         <PlaceholderTab>
           {t("station.detail.analyticsPlaceholder")}

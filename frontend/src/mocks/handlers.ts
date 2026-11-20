@@ -228,6 +228,61 @@ export const handlers: RequestHandler[] = [
           { status: 404 },
         );
   }),
+  http.get("/api/v1/host/stations/:stationId/voters", ({ params, request }) => {
+    const station = findMockStation(String(params.stationId));
+    if (!station) {
+      return HttpResponse.json(
+        { error: { key: "errors.station.not_found" } },
+        { status: 404 },
+      );
+    }
+    const query = new URL(request.url).searchParams;
+    const page = Number(query.get("page") ?? 1);
+    return HttpResponse.json({
+      voters: [],
+      counts: {
+        pending: 0,
+        approved: 0,
+        rejected: 0,
+        revoked: 0,
+        voted: 0,
+        cap: station.voterCap ?? 500,
+      },
+      total: 0,
+      page,
+      pageSize: 25,
+    });
+  }),
+  http.get(
+    "/api/v1/host/stations/:stationId/voters/integrity",
+    ({ params }) => {
+      const station = findMockStation(String(params.stationId));
+      return station
+        ? HttpResponse.json({
+            approvedVoters: station.approvedVoters ?? 0,
+            ballotsCast: station.ballotsCast ?? 0,
+            abstentions: 0,
+            possibleDuplicates: 0,
+            alert: (station.ballotsCast ?? 0) > (station.approvedVoters ?? 0),
+          })
+        : HttpResponse.json(
+            { error: { key: "errors.station.not_found" } },
+            { status: 404 },
+          );
+    },
+  ),
+  http.get(
+    "/api/v1/host/stations/:stationId/voters/export.csv",
+    ({ params }) =>
+      findMockStation(String(params.stationId))
+        ? new HttpResponse("full_name,phone_number,status\n", {
+            headers: { "Content-Type": "text/csv" },
+          })
+        : HttpResponse.json(
+            { error: { key: "errors.station.not_found" } },
+            { status: 404 },
+          ),
+  ),
   http.patch(
     "/api/v1/host/stations/:stationId",
     async ({ params, request }) => {

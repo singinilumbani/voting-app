@@ -520,8 +520,8 @@ export function Tabs({
   return (
     <div className={className}>
       <div className="ui-tabs" role="tablist" aria-label={label}>
-        {tabs.map((tab, index) =>
-          tab.href !== undefined ? (
+        {tabs.map((tab, index) => {
+          return tab.href !== undefined ? (
             <Link
               className="ui-tab"
               id={`${tabsId}-tab-${tab.id}`}
@@ -564,8 +564,8 @@ export function Tabs({
             >
               {tab.label}
             </button>
-          ),
-        )}
+          );
+        })}
       </div>
       {!isRouteTabs && active && (
         <div

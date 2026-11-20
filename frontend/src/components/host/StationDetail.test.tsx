@@ -103,6 +103,20 @@ describe("station detail", () => {
     expect(candidates).toHaveFocus();
   });
 
+  it("omits the Voters tab for Public Poll stations", async () => {
+    renderDetail({ ...sampleStation, mode: "PUBLIC_POLL" }, "voters");
+
+    expect(
+      await screen.findByText(
+        "Voter registration details are not used for Public Poll stations.",
+      ),
+    ).toBeVisible();
+    const tabs = screen.getByRole("tablist", {
+      name: "Polling station sections",
+    });
+    expect(within(tabs).queryByRole("tab", { name: "Voters" })).toBeNull();
+  });
+
   it("shows host activity events and filters out vote events", async () => {
     renderDetail(sampleStation, "overview", [
       {

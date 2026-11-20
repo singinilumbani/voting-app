@@ -10,3 +10,4 @@ Frontend implementation entries are recorded here using the format
 - [F4 — Landing and host auth](./F4-landing-and-host-auth.md)
 - [F5 — Dashboard and polling station wizard](./F5-dashboard-and-wizard.md)
 - [F6 — Station detail and lifecycle](./F6-station-detail.md)
+- [F7 — Host approval queue](./F7-approval-queue.md)

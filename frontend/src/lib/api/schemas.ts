@@ -90,36 +90,47 @@ export const publicStationResponseSchema = z.object({
     .passthrough(),
 });
 
-export const voterSchema = z
-  .object({
-    id: z.string().optional(),
-    voterId: z.string().optional(),
-    fullName: z.string(),
-    phone: z.string().optional(),
-    status: z.string(),
-    rejectionReason: z.string().nullable().optional(),
-    flagReason: z.string().nullable().optional(),
-    blocked: z.boolean().optional(),
-    registeredAt: z.string().optional(),
-    approvedAt: z.string().nullable().optional(),
-    hasVoted: z.boolean().optional(),
-    deviceFlag: z.string().nullable().optional(),
-  })
-  .passthrough();
+const whatsappUrlSchema = z
+  .string()
+  .url()
+  .refine((value) => {
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" && url.hostname === "wa.me";
+    } catch {
+      return false;
+    }
+  });
+
+export const voterSchema = z.object({
+  id: z.string().optional(),
+  voterId: z.string().optional(),
+  fullName: z.string(),
+  phone: z.string().optional(),
+  whatsappUrl: whatsappUrlSchema.nullable().optional(),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED", "VOTED", "REVOKED"]),
+  rejectionReason: z.string().nullable().optional(),
+  flagReason: z.string().nullable().optional(),
+  blocked: z.boolean().optional(),
+  registeredAt: z.string().optional(),
+  approvedAt: z.string().nullable().optional(),
+  hasVoted: z.boolean().optional(),
+  deviceFlag: z.string().nullable().optional(),
+});
 
 export const votersResponseSchema = z.object({
   voters: z.array(voterSchema),
   counts: z.object({
-    pending: z.number(),
-    approved: z.number(),
-    rejected: z.number(),
-    revoked: z.number(),
-    voted: z.number(),
-    cap: z.number(),
+    pending: z.number().int().nonnegative(),
+    approved: z.number().int().nonnegative(),
+    rejected: z.number().int().nonnegative(),
+    revoked: z.number().int().nonnegative(),
+    voted: z.number().int().nonnegative(),
+    cap: z.number().int().nonnegative(),
   }),
-  total: z.number(),
-  page: z.number(),
-  pageSize: z.number(),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive().max(100),
 });
 
 export const analyticsSnapshotSchema = z
@@ -263,18 +274,21 @@ export const startVotingResponseSchema = z.discriminatedUnion(
 );
 export const voterCountResponseSchema = z.object({ updatedCount: z.number() });
 export const voterIntegritySchema = z.object({
-  approvedVoters: z.number(),
-  ballotsCast: z.number(),
-  abstentions: z.number(),
-  possibleDuplicates: z.number(),
+  approvedVoters: z.number().int().nonnegative(),
+  ballotsCast: z.number().int().nonnegative(),
+  abstentions: z.number().int().nonnegative(),
+  possibleDuplicates: z.number().int().nonnegative(),
   alert: z.boolean(),
 });
 export const voterActionSchema = z.object({
   voterId: z.string(),
-  status: z.string(),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED", "VOTED", "REVOKED"]),
 });
-export const voterTokenSchema = z.object({ token: z.string() });
-export const voterExportSchema = z.string();
+export const voterTokenSchema = z.object({ token: z.string().min(1) });
+export const voterExportSchema = z.string().refine((value) => {
+  const header = value.replace(/^\uFEFF/, "").split(/\r?\n/, 1)[0];
+  return header === "full_name,phone_number,status";
+});
 export const voteResultsSchema = z.array(
   z.object({
     id: z.string(),
