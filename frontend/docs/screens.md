@@ -16,6 +16,12 @@
 | `/verification-link-expired` | Expired verification link  | Shown for an invalid or expired verification token                                      |
 | `/host`                      | Host dashboard             | Empty and populated states, station filters/search, account warnings, and draft resume   |
 | `/host/stations/new`         | Station setup wizard       | Create a draft, configure positions and nominees, registration, and launch               |
+| `/host/stations/[id]`        | Station detail overview    | Phase timeline, quick stats, public link/QR, activity, and contextual status action       |
+| `/host/stations/[id]/overview` | Station detail overview  | Overview tab route                                                                        |
+| `/host/stations/[id]/candidates` | Station candidates      | Candidate controls follow DRAFT, REG_OPEN, and read-only lifecycle rules                  |
+| `/host/stations/[id]/voters` | Voters placeholder         | Placeholder until F7; explanatory state for Public Poll                                   |
+| `/host/stations/[id]/analytics` | Analytics placeholder    | Placeholder until F8                                                                     |
+| `/host/stations/[id]/settings` | Station settings          | Registration extension, voter cap, locked options, and cancellation                      |
 | `/host/stations/[id]/edit`   | Edit station wizard        | Resume an existing DRAFT station setup                                                   |
 | `/host/profile`              | Host profile               | Profile, password, tier, export, and account deletion actions                           |
 | `/dev/components`            | Component Sheet            | Development-only component and state showcase                                           |

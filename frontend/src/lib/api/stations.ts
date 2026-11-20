@@ -2,6 +2,7 @@ import { z } from "zod";
 import { apiFetch } from "./client";
 import {
   candidateResponseSchema,
+  activityLogResponseSchema,
   launchStationResponseSchema,
   registrationConfigResponseSchema,
   startVotingResponseSchema,
@@ -10,6 +11,7 @@ import {
   stationListSchema,
   stationResponseSchema,
   uploadSignatureSchema,
+  voterCapResponseSchema,
   type StationDto,
 } from "./schemas";
 import { STATION_LIMITS } from "@/lib/shared/station-constants";
@@ -58,6 +60,16 @@ const votingConfigSchema = z.object({
     .max(STATION_LIMITS.voting.maximumDurationMinutes)
     .optional(),
 });
+const extendRegistrationSchema = z.object({
+  additionalHours: z.number().int().positive().max(24),
+});
+const voterCapSchema = z.object({
+  voterCap: z
+    .number()
+    .int()
+    .min(STATION_LIMITS.registration.minimumVoters)
+    .max(STATION_LIMITS.registration.maximumVoters),
+});
 
 export type StationCreateInput = z.infer<typeof stationCreateSchema>;
 
@@ -79,6 +91,13 @@ export const stationsApi = {
     return apiFetch(
       `/api/v1/host/stations/${encodeURIComponent(id)}`,
       stationResponseSchema,
+    );
+  },
+  activityLog(stationId: string) {
+    const id = idSchema.parse(stationId);
+    return apiFetch(
+      `/api/v1/host/stations/${encodeURIComponent(id)}/activity-log`,
+      activityLogResponseSchema,
     );
   },
   create(input: StationCreateInput): Promise<{ station: StationDto }> {
@@ -179,6 +198,28 @@ export const stationsApi = {
       `/api/v1/host/stations/${encodeURIComponent(id)}/registration-config`,
       registrationConfigResponseSchema,
       { method: "PUT", body: registrationConfigSchema.parse(input) },
+    );
+  },
+  extendRegistration(
+    stationId: string,
+    input: z.infer<typeof extendRegistrationSchema>,
+  ) {
+    const id = idSchema.parse(stationId);
+    return apiFetch(
+      `/api/v1/host/stations/${encodeURIComponent(id)}/extend-registration`,
+      stationResponseSchema,
+      {
+        method: "POST",
+        body: extendRegistrationSchema.parse(input),
+      },
+    );
+  },
+  updateVoterCap(stationId: string, input: z.infer<typeof voterCapSchema>) {
+    const id = idSchema.parse(stationId);
+    return apiFetch(
+      `/api/v1/host/stations/${encodeURIComponent(id)}/voter-cap`,
+      voterCapResponseSchema,
+      { method: "PATCH", body: voterCapSchema.parse(input) },
     );
   },
   configureVoting(

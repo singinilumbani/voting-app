@@ -17,6 +17,10 @@ let host: HostDto = {
 
 let mockSessionActive = true;
 let mockStations: StationDto[] = [];
+const mockStationActivity = new Map<
+  string,
+  { eventType: string; createdAt: string }[]
+>();
 
 function findMockStation(id: string): StationDto | undefined {
   return mockStations.find(
@@ -28,6 +32,14 @@ function replaceMockStation(updated: StationDto): void {
   mockStations = mockStations.map((station) =>
     station.id === updated.id ? updated : station,
   );
+}
+
+function addMockStationActivity(stationId: string, eventType: string): void {
+  const entries = mockStationActivity.get(stationId) ?? [];
+  mockStationActivity.set(stationId, [
+    { eventType, createdAt: new Date().toISOString() },
+    ...entries,
+  ]);
 }
 
 export const handlers: RequestHandler[] = [
@@ -366,6 +378,7 @@ export const handlers: RequestHandler[] = [
         );
       }
       const candidate = { id: crypto.randomUUID(), ...body.data };
+      addMockStationActivity(String(params.stationId), "CANDIDATE_ADDED");
       replaceMockStation({
         ...station,
         categories: station.categories?.map((item) =>
@@ -398,6 +411,7 @@ export const handlers: RequestHandler[] = [
         );
       }
       const updatedCandidate = { ...existingCandidate, ...body.data };
+      addMockStationActivity(String(params.stationId), "CANDIDATE_EDITED");
       const categories = station.categories?.map((category) => ({
         ...category,
         candidates: category.candidates?.map((candidate) =>
@@ -513,6 +527,128 @@ export const handlers: RequestHandler[] = [
       shareLink: `http://localhost:3000/s/${publicId}`,
     });
   }),
+  http.get("/api/v1/host/stations/:stationId/activity-log", ({ params }) =>
+    HttpResponse.json({
+      activity: mockStationActivity.get(String(params.stationId)) ?? [],
+    }),
+  ),
+  http.post(
+    "/api/v1/host/stations/:stationId/extend-registration",
+    async ({ params, request }) => {
+      const station = findMockStation(String(params.stationId));
+      const body = z
+        .object({ additionalHours: z.number().int().positive().max(24) })
+        .safeParse(await request.json());
+      if (!station || !body.success) {
+        return HttpResponse.json(
+          { error: { key: "errors.validation.failed" } },
+          { status: 400 },
+        );
+      }
+      if (
+        station.status !== "REG_OPEN" &&
+        station.status !== "REGISTRATION_OPEN"
+      ) {
+        return HttpResponse.json(
+          { error: { key: "errors.station.registration_not_open" } },
+          { status: 409 },
+        );
+      }
+      const end = station.regEndsAt
+        ? Date.parse(station.regEndsAt)
+        : Date.now();
+      const updated = {
+        ...station,
+        regEndsAt: new Date(
+          end + body.data.additionalHours * 60 * 60 * 1000,
+        ).toISOString(),
+      };
+      replaceMockStation(updated);
+      addMockStationActivity(String(params.stationId), "REGISTRATION_EXTENDED");
+      return HttpResponse.json({ station: updated });
+    },
+  ),
+  http.patch(
+    "/api/v1/host/stations/:stationId/voter-cap",
+    async ({ params, request }) => {
+      const station = findMockStation(String(params.stationId));
+      const body = z
+        .object({ voterCap: z.number().int().min(2).max(50_000) })
+        .safeParse(await request.json());
+      if (!station || !body.success) {
+        return HttpResponse.json(
+          { error: { key: "errors.validation.failed" } },
+          { status: 400 },
+        );
+      }
+      if (body.data.voterCap <= (station.voterCap ?? 0)) {
+        return HttpResponse.json(
+          { error: { key: "errors.station.voter_cap_locked" } },
+          { status: 409 },
+        );
+      }
+      const updated = { ...station, voterCap: body.data.voterCap };
+      replaceMockStation(updated);
+      addMockStationActivity(String(params.stationId), "VOTER_CAP_INCREASED");
+      return HttpResponse.json({ station: updated });
+    },
+  ),
+  http.post(
+    "/api/v1/host/stations/:stationId/start-voting",
+    async ({ params, request }) => {
+      const station = findMockStation(String(params.stationId));
+      const body = z
+        .object({ confirm: z.literal(true).optional() })
+        .safeParse(await request.json());
+      if (!station || !body.success) {
+        return HttpResponse.json(
+          { error: { key: "errors.validation.failed" } },
+          { status: 400 },
+        );
+      }
+      const pendingCount = 0;
+      if (!body.data.confirm) {
+        return HttpResponse.json({
+          requiresConfirmation: true,
+          warningKey: "warnings.station.pending_voters",
+          pendingCount,
+        });
+      }
+      const updated = { ...station, status: "VOTE_OPEN" };
+      replaceMockStation(updated);
+      addMockStationActivity(String(params.stationId), "VOTING_STARTED");
+      return HttpResponse.json({
+        requiresConfirmation: false,
+        station: updated,
+        pendingCount,
+      });
+    },
+  ),
+  http.post(
+    "/api/v1/host/stations/:stationId/cancel",
+    async ({ params, request }) => {
+      const station = findMockStation(String(params.stationId));
+      const body = z
+        .object({ confirm: z.literal("CANCEL").optional() })
+        .safeParse(await request.json());
+      if (!station || !body.success) {
+        return HttpResponse.json(
+          { error: { key: "errors.validation.failed" } },
+          { status: 400 },
+        );
+      }
+      if (station.status === "VOTE_OPEN" && body.data.confirm !== "CANCEL") {
+        return HttpResponse.json(
+          { error: { key: "errors.station.cancel_confirmation_required" } },
+          { status: 409 },
+        );
+      }
+      const updated = { ...station, status: "CANCELLED" };
+      replaceMockStation(updated);
+      addMockStationActivity(String(params.stationId), "STATION_CANCELLED");
+      return HttpResponse.json({ station: updated });
+    },
+  ),
   http.post("https://api.cloudinary.com/v1_1/:cloudName/image/upload", () =>
     HttpResponse.json({
       secure_url:

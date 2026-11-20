@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   useId,
   useState,
@@ -474,17 +475,31 @@ export type TabDefinition = Readonly<{
   id: string;
   label: string;
   content: ReactNode;
+  href?: string;
 }>;
 
 export type TabsProps = Readonly<{
   tabs: readonly TabDefinition[];
   label: string;
   defaultTab?: string;
+  activeTab?: string;
+  className?: string;
 }>;
 
-export function Tabs({ tabs, label, defaultTab }: TabsProps) {
+export function Tabs({
+  tabs,
+  label,
+  defaultTab,
+  activeTab: controlledTab,
+  className = "",
+}: TabsProps) {
   const tabsId = useId();
-  const [activeTab, setActiveTab] = useState(defaultTab ?? tabs[0]?.id ?? "");
+  const [localActiveTab, setLocalActiveTab] = useState(
+    defaultTab ?? tabs[0]?.id ?? "",
+  );
+  const activeTab = controlledTab ?? localActiveTab;
+  const isRouteTabs =
+    tabs.length > 0 && tabs.every((tab) => tab.href !== undefined);
 
   function moveFocus(currentIndex: number, key: string) {
     if (tabs.length === 0) return;
@@ -495,39 +510,64 @@ export function Tabs({ tabs, label, defaultTab }: TabsProps) {
     if (key === "Home") nextIndex = 0;
     if (key === "End") nextIndex = tabs.length - 1;
     const nextTab = tabs[nextIndex];
-    if (nextTab) setActiveTab(nextTab.id);
+    if (nextTab && controlledTab === undefined) {
+      setLocalActiveTab(nextTab.id);
+    }
     document.getElementById(`${tabsId}-tab-${nextTab?.id}`)?.focus();
   }
 
   const active = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
   return (
-    <div>
+    <div className={className}>
       <div className="ui-tabs" role="tablist" aria-label={label}>
-        {tabs.map((tab, index) => (
-          <button
-            type="button"
-            className="ui-tab"
-            id={`${tabsId}-tab-${tab.id}`}
-            role="tab"
-            key={tab.id}
-            aria-selected={tab.id === active?.id}
-            aria-controls={`${tabsId}-panel-${tab.id}`}
-            tabIndex={tab.id === active?.id ? 0 : -1}
-            onClick={() => setActiveTab(tab.id)}
-            onKeyDown={(event) => {
-              if (
-                ["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)
-              ) {
-                event.preventDefault();
-                moveFocus(index, event.key);
-              }
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {tabs.map((tab, index) =>
+          tab.href !== undefined ? (
+            <Link
+              className="ui-tab"
+              id={`${tabsId}-tab-${tab.id}`}
+              role="tab"
+              key={tab.id}
+              href={tab.href}
+              aria-selected={tab.id === active?.id}
+              aria-current={tab.id === active?.id ? "page" : undefined}
+              tabIndex={tab.id === active?.id ? 0 : -1}
+              onKeyDown={(event) => {
+                if (
+                  ["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)
+                ) {
+                  event.preventDefault();
+                  moveFocus(index, event.key);
+                }
+              }}
+            >
+              {tab.label}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className="ui-tab"
+              id={`${tabsId}-tab-${tab.id}`}
+              role="tab"
+              key={tab.id}
+              aria-selected={tab.id === active?.id}
+              aria-controls={`${tabsId}-panel-${tab.id}`}
+              tabIndex={tab.id === active?.id ? 0 : -1}
+              onClick={() => setLocalActiveTab(tab.id)}
+              onKeyDown={(event) => {
+                if (
+                  ["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)
+                ) {
+                  event.preventDefault();
+                  moveFocus(index, event.key);
+                }
+              }}
+            >
+              {tab.label}
+            </button>
+          ),
+        )}
       </div>
-      {active && (
+      {!isRouteTabs && active && (
         <div
           role="tabpanel"
           id={`${tabsId}-panel-${active.id}`}

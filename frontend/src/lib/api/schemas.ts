@@ -228,6 +228,24 @@ export const registrationConfigResponseSchema = z.object({
   station: stationSchema,
   warningKey: z.string().optional(),
 });
+export const activityItemSchema = z
+  .object({
+    id: z.string().optional(),
+    type: z.string().optional(),
+    action: z.string().optional(),
+    eventType: z.string().optional(),
+    actorType: z.string().optional(),
+    createdAt: z.string().optional(),
+    timestamp: z.string().optional(),
+  })
+  .passthrough();
+export const activityLogResponseSchema = z.object({
+  activity: z.array(activityItemSchema),
+});
+export const voterCapResponseSchema = z.object({
+  station: stationSchema,
+  warningKey: z.string().optional(),
+});
 export const startVotingResponseSchema = z.discriminatedUnion(
   "requiresConfirmation",
   [

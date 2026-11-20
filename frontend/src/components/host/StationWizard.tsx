@@ -15,7 +15,7 @@ import {
   NumberField,
   Toggle,
 } from "@/components/ui/primitives";
-import { ConfirmDialog, M3ModalDialog } from "@/components/ui/dialogs";
+import { ConfirmDialog } from "@/components/ui/dialogs";
 import { Icon } from "@/components/ui/Icon";
 import { useT } from "@/lib/i18n";
 import { ApiError } from "@/lib/api/client";
@@ -34,7 +34,7 @@ import {
 import { stationsApi } from "@/lib/api/stations";
 import type { StationDto } from "@/lib/api/schemas";
 import { STATION_LIMITS } from "@/lib/shared/station-constants";
-import { ImageUploader } from "./ImageUploader";
+import { CandidateEditorDialog } from "./CandidateEditorDialog";
 
 type CategoryDto = NonNullable<StationDto["categories"]>[number];
 type CandidateDto = NonNullable<CategoryDto["candidates"]>[number];
@@ -494,7 +494,11 @@ export function StationWizard({
     try {
       const input = {
         name: pending.name.trim(),
-        ...(candidateImageUrl ? { picture: candidateImageUrl } : {}),
+        ...(pending.candidateId
+          ? { picture: candidateImageUrl }
+          : candidateImageUrl
+            ? { picture: candidateImageUrl }
+            : {}),
       };
       let savedCandidate: CandidateDto;
       if (pending.candidateId) {
@@ -669,11 +673,7 @@ export function StationWizard({
       return;
     }
     if (draft.step === 2) {
-      if (
-        categories.some(
-          (category) => needsMoreCandidates(category),
-        )
-      ) {
+      if (categories.some((category) => needsMoreCandidates(category))) {
         setError("station.validation.minimumCandidates");
         return;
       }
@@ -692,9 +692,9 @@ export function StationWizard({
       ? null
       : new Date(
           now +
-      (draft.basics.mode === "CLOSED_VOTE"
-        ? currentRegistrationDuration * 60 * 60 * 1000
-        : 0),
+            (draft.basics.mode === "CLOSED_VOTE"
+              ? currentRegistrationDuration * 60 * 60 * 1000
+              : 0),
         );
   const scheduleLatest = scheduleEarliest
     ? new Date(
@@ -1120,9 +1120,7 @@ export function StationWizard({
                 onBack={goBack}
                 onNext={() => {
                   if (
-                    categories.some(
-                      (category) => needsMoreCandidates(category),
-                    )
+                    categories.some((category) => needsMoreCandidates(category))
                   ) {
                     setError("station.validation.minimumCandidates");
                   } else {
@@ -1338,98 +1336,52 @@ export function StationWizard({
         cancelLabel={t("common.cancel")}
         confirmLabel={t("station.launch")}
       />
-      <M3ModalDialog
+      <CandidateEditorDialog
         open={candidateModalOpen && draft.pendingCandidate !== null}
-        onClose={closeCandidateDialog}
-        title={t(
-          draft.pendingCandidate?.candidateId
-            ? "station.editCandidate"
-            : "station.addCandidate",
-        )}
-        actions={null}
-      >
-        {draft.pendingCandidate && (
-          <form
-            className="station-candidate-form"
-            onSubmit={(event) => void saveCandidate(event)}
-          >
-            <M3TextField
-              label={t("station.candidateName")}
-              value={draft.pendingCandidate.name}
-              onChange={(event) => {
-                const name = event.currentTarget.value;
-                setDraft((current) => ({
-                  ...current,
-                  pendingCandidate: current.pendingCandidate
-                    ? { ...current.pendingCandidate, name }
-                    : null,
-                }));
-                setPersistDraft(true);
-                setDirty(true);
-              }}
-              required
-            />
-            <ImageUploader
-              stationId={activeStationId ?? ""}
-              imageUrl={candidateImageUrl}
-              draftImageDataUrl={draft.pendingCandidate.imageDataUrl}
-              onImageUrlChange={(imageUrl) => {
-                setCandidateImageUrl(imageUrl);
-                setDraft((current) => ({
-                  ...current,
-                  pendingCandidate: current.pendingCandidate
-                    ? {
-                        ...current.pendingCandidate,
-                        imageUrl: imageUrl ?? undefined,
-                      }
-                    : null,
-                }));
-                setPersistDraft(true);
-              }}
-              onDraftImageChange={(imageDataUrl) => {
-                setDraft((current) => ({
-                  ...current,
-                  pendingCandidate: current.pendingCandidate
-                    ? { ...current.pendingCandidate, imageDataUrl }
-                    : null,
-                }));
-                setPersistDraft(true);
-              }}
-              onUploadStateChange={setCandidateUploading}
-              fileLabel={t("station.imageFile")}
-              previewLabel={t("station.imagePreview")}
-              removeLabel={t("station.removeImage")}
-              failureTitle={t("station.uploadFailureTitle")}
-              failureDescription={t("station.uploadFailureDescription")}
-              fileTooLarge={t("station.image.too_large")}
-              retryLabel={t("station.retryUpload")}
-              closeLabel={t("common.close")}
-              uploadingLabel={t("station.uploading")}
-              translateError={t}
-            />
-            <div className="ui-dialog__actions">
-              <M3Button
-                type="button"
-                variant="text"
-                onClick={closeCandidateDialog}
-              >
-                {t("common.cancel")}
-              </M3Button>
-              <M3Button
-                type="submit"
-                loading={busy}
-                disabled={
-                  candidateUploading ||
-                  (Boolean(draft.pendingCandidate.imageDataUrl) &&
-                    !candidateImageUrl)
+        stationId={activeStationId ?? ""}
+        editing={Boolean(draft.pendingCandidate?.candidateId)}
+        name={draft.pendingCandidate?.name ?? ""}
+        imageUrl={candidateImageUrl}
+        draftImageDataUrl={draft.pendingCandidate?.imageDataUrl}
+        busy={busy}
+        uploading={candidateUploading}
+        error={error ? t(error) : undefined}
+        onNameChange={(name) => {
+          setDraft((current) => ({
+            ...current,
+            pendingCandidate: current.pendingCandidate
+              ? { ...current.pendingCandidate, name }
+              : null,
+          }));
+          setPersistDraft(true);
+          setDirty(true);
+        }}
+        onImageUrlChange={(imageUrl) => {
+          setCandidateImageUrl(imageUrl);
+          setDraft((current) => ({
+            ...current,
+            pendingCandidate: current.pendingCandidate
+              ? {
+                  ...current.pendingCandidate,
+                  imageUrl: imageUrl ?? undefined,
                 }
-              >
-                {t("common.save")}
-              </M3Button>
-            </div>
-          </form>
-        )}
-      </M3ModalDialog>
+              : null,
+          }));
+          setPersistDraft(true);
+        }}
+        onDraftImageChange={(imageDataUrl) => {
+          setDraft((current) => ({
+            ...current,
+            pendingCandidate: current.pendingCandidate
+              ? { ...current.pendingCandidate, imageDataUrl }
+              : null,
+          }));
+          setPersistDraft(true);
+        }}
+        onUploadStateChange={setCandidateUploading}
+        onClose={closeCandidateDialog}
+        onSave={(event) => void saveCandidate(event)}
+      />
     </main>
   );
 }

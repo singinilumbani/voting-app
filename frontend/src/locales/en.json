@@ -243,6 +243,7 @@
       "minimumCategories": "Add at least one position to continue.",
       "minimumCandidates": "Add at least two candidates to every position to continue.",
       "registration": "Enter a voter count from 2 to 50,000 and a registration duration from 1 to 24 hours.",
+      "voterCapIncrease": "Enter an estimated voter count higher than the current count and no greater than 50,000.",
       "scheduledStart": "Choose a scheduled start after registration closes and within seven days."
     },
     "draft": {
@@ -260,6 +261,119 @@
       "nominees": "Nominees",
       "registration": "Registration",
       "voting": "Voting Window"
+    },
+    "detail": {
+      "tabs": {
+        "overview": "Overview",
+        "candidates": "Candidates",
+        "voters": "Voters",
+        "analytics": "Analytics",
+        "settings": "Settings"
+      },
+      "tabNavigation": "Polling station sections",
+      "primary": {
+        "edit": "Edit station",
+        "extendRegistration": "Extend registration",
+        "startVoting": "Start voting",
+        "viewResults": "View results",
+        "backToStations": "Back to stations"
+      },
+      "phaseTimeline": "Station phases",
+      "phase": {
+        "registration": "Registration",
+        "voting": "Voting",
+        "results": "Results"
+      },
+      "phaseState": {
+        "complete": "Complete",
+        "current": "Current phase",
+        "upcoming": "Upcoming"
+      },
+      "quickStats": "Quick statistics",
+      "registered": {
+        "one": "{count} registered voter",
+        "other": "{count} registered voters"
+      },
+      "approved": {
+        "one": "{count} approved voter",
+        "other": "{count} approved voters"
+      },
+      "pending": {
+        "one": "{count} pending registration",
+        "other": "{count} pending registrations"
+      },
+      "ballots": {
+        "one": "{count} ballot cast",
+        "other": "{count} ballots cast"
+      },
+      "voterCap": "Estimated voter count",
+      "shareTitle": "Share this polling station",
+      "publicLink": "Public voting link",
+      "copyLink": "Copy link",
+      "copiedLink": "Copied",
+      "copyError": "Unable to copy link.",
+      "qrLabel": "QR code for this polling station",
+      "activityTitle": "Station activity",
+      "activityEmpty": "No host activity has been recorded yet.",
+      "activityUnavailable": "Station activity is temporarily unavailable.",
+      "activityEvents": {
+        "CANDIDATE_ADDED": "A candidate was added.",
+        "CANDIDATE_EDITED": "A candidate was edited.",
+        "REGISTRATION_EXTENDED": "Registration was extended.",
+        "VOTER_CAP_INCREASED": "The estimated voter count was increased.",
+        "VOTING_STARTED": "Voting was started.",
+        "STATION_CANCELLED": "The station was cancelled.",
+        "VOTER_APPROVED": "A voter registration was approved.",
+        "VOTER_REJECTED": "A voter registration was rejected.",
+        "VOTER_REVOKED": "A voter registration was revoked.",
+        "TOKEN_REISSUED": "A voter token was reissued.",
+        "PHONE_BLOCKED": "A phone number was blocked."
+      },
+      "candidateLock": "Candidates are locked for this station status.",
+      "candidateReadOnly": "Candidate information is read-only.",
+      "addCandidate": "Add candidate",
+      "editCandidate": "Edit candidate",
+      "editCandidateFor": "Edit candidate {name}",
+      "removeCandidate": "Remove candidate",
+      "removeCandidateFor": "Remove candidate {name}",
+      "settingsTitle": "Station settings",
+      "resultsVisibility": "Results visibility",
+      "resultsImmediate": "Immediate live results",
+      "resultsConcealed": "Concealed until voting ends",
+      "resultsLocked": "Results visibility is locked once voting starts.",
+      "votingOptionsLocked": "These options are locked once registration opens.",
+      "saveSettings": "Save settings",
+      "settingsSaved": "Station settings saved.",
+      "voterCapIncrease": "New estimated voter count",
+      "voterCapIncreaseHint": "The voter count can only be increased, up to 50,000.",
+      "dangerZone": "Danger zone",
+      "cancelStation": "Cancel station",
+      "cancelTitle": "Cancel this polling station?",
+      "cancelDescription": "Cancelling stops this polling station and its voting activity.",
+      "cancelAfterVotingDescription": "Voting has opened. Type CANCEL to confirm that this polling station should be cancelled.",
+      "cancelWordLabel": "Type CANCEL to confirm",
+      "cancelConfirm": "Cancel station",
+      "zeroVotersTitle": "No approved voters",
+      "zeroVotersDescription": "Voting cannot start because there are no approved voters. Registration is closed and cannot be extended or reopened here.",
+      "startVotingTitle": "Start voting",
+      "startVotingDescription": "Review the voting window before you start voting.",
+      "votingStart": "Voting starts",
+      "openNow": "Open now",
+      "scheduleStart": "Schedule a start",
+      "scheduledStart": "Scheduled start",
+      "votingDuration": "Voting duration in minutes",
+      "pendingWarning": "{count} registrations are still pending. They will not be able to vote after voting starts.",
+      "confirmStartVoting": "Confirm and start voting",
+      "extendTitle": "Extend registration",
+      "extendDescription": "Choose additional hours. The total registration window cannot exceed 24 hours.",
+      "additionalHours": "Additional hours",
+      "extendAction": "Extend registration",
+      "readOnlyTitle": "Read-only",
+      "votersPlaceholder": "Voter approval tools will be available in a later update.",
+      "votersPublicPoll": "Voter registration details are not used for Public Poll stations.",
+      "analyticsPlaceholder": "Station analytics will be available in a later update.",
+      "resultsPlaceholder": "Results are not available for this station yet.",
+      "loadError": "The station could not be loaded."
     }
   },
   "legal": {
@@ -404,7 +518,8 @@
       "vote_closed": "Voting closed",
       "archived": "Archived",
       "purged": "Purged",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "unknown": "Unknown status"
     },
     "host_auth": {
       "email_verified": "Your email address has been verified.",
@@ -414,6 +529,12 @@
     },
     "vote": {
       "submitted": "Your ballot has been submitted."
+    }
+  },
+  "warnings": {
+    "station": {
+      "pending_voters": "Some voter registrations are still pending.",
+      "free_tier_voter_cap": "This voter count may require a paid plan."
     }
   },
   "translationExamples": {
