@@ -283,6 +283,90 @@ export const handlers: RequestHandler[] = [
             { status: 404 },
           ),
   ),
+  http.get(
+    "/api/v1/host/stations/:stationId/analytics/snapshot",
+    ({ params }) => {
+      const station = findMockStation(String(params.stationId));
+      if (!station) {
+        return HttpResponse.json(
+          { error: { key: "errors.station.not_found" } },
+          { status: 404 },
+        );
+      }
+      const status = station.status.toUpperCase();
+      const state = ["VOTE_OPEN", "VOTING_OPEN"].includes(status)
+        ? "LIVE"
+        : ["VOTE_CLOSED", "VOTING_CLOSED", "ARCHIVED"].includes(status)
+          ? "FINAL"
+          : "WAITING";
+      const now = new Date();
+      const approvedVoters =
+        station.mode === "CLOSED_VOTE" ? (station.approvedVoters ?? 0) : null;
+      const ballotsCast = station.ballotsCast ?? 0;
+      return HttpResponse.json({
+        stationId: station.id ?? station.stationId ?? String(params.stationId),
+        stationName: station.name,
+        stationMode: station.mode,
+        status: station.status,
+        state,
+        ballotsCast,
+        approvedVoters,
+        turnoutPercent:
+          approvedVoters === null
+            ? null
+            : approvedVoters > 0
+              ? (ballotsCast / approvedVoters) * 100
+              : 0,
+        possibleDuplicates: 0,
+        timeRemainingSeconds:
+          state === "LIVE" && station.voteEndsAt
+            ? Math.max(
+                0,
+                Math.floor(
+                  (Date.parse(station.voteEndsAt) - now.getTime()) / 1_000,
+                ),
+              )
+            : null,
+        categories: (station.categories ?? []).map((category) => ({
+          categoryId: category.id,
+          title: category.title,
+          candidates: (category.candidates ?? []).map((candidate) => ({
+            candidateId: candidate.id,
+            name: candidate.name,
+            imageUrl: candidate.imageUrl ?? candidate.picture ?? null,
+            count: 0,
+            percentage: 0,
+            isLeader: false,
+            isTie: false,
+          })),
+          abstentions: 0,
+        })),
+        abstentions: 0,
+        lastUpdated: now.toISOString(),
+      });
+    },
+  ),
+  http.get("/api/v1/host/stations/:stationId/analytics/audit", ({ params }) =>
+    findMockStation(String(params.stationId))
+      ? HttpResponse.json({ events: [], limit: 500 })
+      : HttpResponse.json(
+          { error: { key: "errors.station.not_found" } },
+          { status: 404 },
+        ),
+  ),
+  http.get(
+    "/api/v1/host/stations/:stationId/analytics/export.csv",
+    ({ params }) =>
+      findMockStation(String(params.stationId))
+        ? new HttpResponse(
+            "category,candidate,votes,percentage,is_leader,is_tie\n",
+            { headers: { "Content-Type": "text/csv" } },
+          )
+        : HttpResponse.json(
+            { error: { key: "errors.station.not_found" } },
+            { status: 404 },
+          ),
+  ),
   http.patch(
     "/api/v1/host/stations/:stationId",
     async ({ params, request }) => {

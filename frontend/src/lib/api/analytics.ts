@@ -1,5 +1,9 @@
 import { apiFetch, apiFetchText } from "./client";
-import { analyticsAuditSchema, analyticsSnapshotSchema } from "./schemas";
+import {
+  analyticsAuditSchema,
+  analyticsExportSchema,
+  analyticsSnapshotSchema,
+} from "./schemas";
 import { z } from "zod";
 
 const stationIdSchema = z.string().min(1);
@@ -23,6 +27,6 @@ export const analyticsApi = {
     const id = stationIdSchema.parse(stationId);
     return apiFetchText(
       `/api/v1/host/stations/${encodeURIComponent(id)}/analytics/export.csv`,
-    );
+    ).then((csv) => analyticsExportSchema.parse(csv));
   },
 };

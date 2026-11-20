@@ -370,7 +370,6 @@
       "extendAction": "Extend registration",
       "readOnlyTitle": "Read-only",
       "votersPublicPoll": "Voter registration details are not used for Public Poll stations.",
-      "analyticsPlaceholder": "Station analytics will be available in a later update.",
       "resultsPlaceholder": "Results are not available for this station yet.",
       "loadError": "The station could not be loaded."
     },
@@ -457,6 +456,64 @@
       "tokenCopied": "Copied",
       "copyError": "Unable to copy the token."
     }
+  },
+  "analytics": {
+    "title": "Live analytics",
+    "loading": "Loading station analytics.",
+    "connection": {
+      "connected": "Live Connected",
+      "reconnecting": "Reconnecting",
+      "offline": "Offline"
+    },
+    "lastUpdated": "Last Updated {age}",
+    "justNow": "just now",
+    "secondsAgo": {
+      "one": "{count} second ago",
+      "other": "{count} seconds ago"
+    },
+    "minutesAgo": {
+      "one": "{count} minute ago",
+      "other": "{count} minutes ago"
+    },
+    "hoursAgo": {
+      "one": "{count} hour ago",
+      "other": "{count} hours ago"
+    },
+    "exportMenu": "Export reports",
+    "exportCsv": "Download CSV",
+    "waitingForVoting": "Waiting for voting to open",
+    "finalResults": "Final results",
+    "noSnapshot": "Analytics are not available right now.",
+    "turnoutTitle": "Turnout",
+    "turnoutFraction": "{ballots} ballots from {approved} approved voters",
+    "ballotsTitle": "Ballots cast",
+    "ballotsCastLabel": "Ballots cast",
+    "possibleDuplicates": {
+      "one": "{count} possible duplicate",
+      "other": "{count} possible duplicates"
+    },
+    "countdownTitle": "Session countdown",
+    "countdownClosed": "Voting closed",
+    "countdownWaiting": "Not started",
+    "countdownUnavailable": "End time unavailable",
+    "countdownValue": "{hours}h {minutes}m {seconds}s remaining",
+    "leaderboards": "Category leaderboards",
+    "candidateResult": "{percentage}% ({count} votes)",
+    "candidateBar": "Votes for {name}",
+    "leader": "LEADER",
+    "tie": "Tie",
+    "noResults": "No votes have been recorded yet.",
+    "noCategories": "No categories are available.",
+    "viewAuditFor": "View check-in activity for {category}",
+    "auditTitle": "Check-in activity",
+    "auditStationWide": "These are station-wide check-ins and are not linked to candidate or ballot data.",
+    "closeAudit": "Close activity",
+    "loadingAudit": "Loading check-in activity.",
+    "checkInCount": {
+      "one": "{count} check-in shown",
+      "other": "{count} check-ins shown"
+    },
+    "auditEmpty": "No check-ins recorded."
   },
   "legal": {
     "placeholder": "This page will contain the complete policy text before public launch."

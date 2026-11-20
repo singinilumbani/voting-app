@@ -40,6 +40,7 @@ import { useCurrentTime } from "@/lib/host/use-current-time";
 import { STATION_LIMITS } from "@/lib/shared/station-constants";
 import { CandidateEditorDialog } from "./CandidateEditorDialog";
 import { ApprovalQueue } from "./ApprovalQueue";
+import { StationAnalytics } from "./StationAnalytics";
 import { HostShell, SessionGate } from "./HostPages";
 
 const LazyQRCode = dynamic(
@@ -1208,9 +1209,12 @@ export function StationDetail({
           </PlaceholderTab>
         ))}
       {activeTab === "analytics" && (
-        <PlaceholderTab>
-          {t("station.detail.analyticsPlaceholder")}
-        </PlaceholderTab>
+        <StationAnalytics
+          stationId={stationId}
+          stationMode={station.mode}
+          stationStatus={status}
+          voteEndsAt={station.voteEndsAt}
+        />
       )}
       {activeTab === "settings" && (
         <SettingsTab

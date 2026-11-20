@@ -140,11 +140,11 @@ export const analyticsSnapshotSchema = z
     stationMode: z.enum(["CLOSED_VOTE", "PUBLIC_POLL"]),
     status: z.string(),
     state: z.enum(["WAITING", "LIVE", "FINAL"]),
-    ballotsCast: z.number(),
-    approvedVoters: z.number().nullable(),
-    turnoutPercent: z.number().nullable(),
-    possibleDuplicates: z.number(),
-    timeRemainingSeconds: z.number().nullable(),
+    ballotsCast: z.number().int().nonnegative(),
+    approvedVoters: z.number().int().nonnegative().nullable(),
+    turnoutPercent: z.number().nonnegative().nullable(),
+    possibleDuplicates: z.number().int().nonnegative(),
+    timeRemainingSeconds: z.number().int().nonnegative().nullable(),
     categories: z.array(
       z.object({
         categoryId: z.string(),
@@ -154,29 +154,31 @@ export const analyticsSnapshotSchema = z
             candidateId: z.string(),
             name: z.string(),
             imageUrl: z.string().url().nullable(),
-            count: z.number(),
-            percentage: z.number(),
+            count: z.number().int().nonnegative(),
+            percentage: z.number().nonnegative().max(100),
             isLeader: z.boolean(),
             isTie: z.boolean(),
           }),
         ),
-        abstentions: z.number(),
+        abstentions: z.number().int().nonnegative(),
       }),
     ),
-    abstentions: z.number(),
-    lastUpdated: z.string(),
+    abstentions: z.number().int().nonnegative(),
+    lastUpdated: z.string().datetime(),
   })
   .passthrough();
 
 export const analyticsAuditSchema = z.object({
   events: z.array(
     z.object({
-      voterId: z.string(),
-      fullName: z.string(),
-      checkedInAt: z.string(),
+      checkedInAt: z.string().datetime(),
     }),
   ),
-  limit: z.number(),
+  limit: z.number().int().nonnegative(),
+});
+export const analyticsExportSchema = z.string().refine((value) => {
+  const header = value.replace(/^\uFEFF/, "").split(/\r?\n/, 1)[0];
+  return header === "category,candidate,votes,percentage,is_leader,is_tie";
 });
 
 export const registrationResponseSchema = z.object({
@@ -308,3 +310,4 @@ export type StationDto = z.infer<typeof stationSchema>;
 export type VoterDto = z.infer<typeof voterSchema>;
 export type PublicStationDto = z.infer<typeof publicStationResponseSchema>;
 export type AnalyticsSnapshot = z.infer<typeof analyticsSnapshotSchema>;
+export type AnalyticsAudit = z.infer<typeof analyticsAuditSchema>;
