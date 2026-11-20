@@ -24,6 +24,9 @@
 | `/host/stations/[id]/settings`   | Station settings          | Registration extension, voter cap, locked options, and cancellation                                              |
 | `/host/stations/[id]/edit`       | Edit station wizard       | Resume an existing DRAFT station setup                                                                           |
 | `/host/profile`                  | Host profile              | Profile, password, tier, export, and account deletion actions                                                    |
+| `/s/[publicId]`                  | Public station            | Cached public station config and mobile-only gate                                                                |
+| `/s/[publicId]/register`         | Closed Vote registration  | Device UUID, lazy fingerprint, hashed duplicate notice                                                           |
+| `/s/[publicId]/ballot`           | Public Poll ballot        | Device UUID, lazy fingerprint, hashed duplicate notice                                                           |
 | `/dev/components`                | Component Sheet           | Development-only component and state showcase                                                                    |
 | `/maintenance`                   | Maintenance notice        | Temporary service availability notice                                                                            |
 | `/offline`                       | Offline notice            | Connection recovery guidance                                                                                     |

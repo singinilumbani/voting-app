@@ -21,6 +21,7 @@
   "dependencies": {
     "@material-symbols/font-400": "^0.48.3",
     "@tanstack/react-query": "^5.107.1",
+    "@thumbmarkjs/thumbmarkjs": "^1.12.0",
     "next": "16.4.5",
     "qrcode.react": "^4.2.0",
     "react": "19.3.0",

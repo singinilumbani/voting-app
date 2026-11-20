@@ -686,6 +686,26 @@
       "other": "{count} voters"
     }
   },
+  "voter": {
+    "station": {
+      "title": "Polling Station",
+      "description": "Use this station's registration or ballot page."
+    },
+    "stationFallback": "Polling station",
+    "registration": {
+      "title": "Voter registration"
+    },
+    "ballot": {
+      "title": "Public Poll ballot"
+    },
+    "devicePrivacyNotice": "A hashed device identifier is used only to detect duplicates in this election.",
+    "signalsReady": "Device privacy signals are ready.",
+    "mobileRequired": {
+      "title": "Mobile device required",
+      "description": "This polling station can only be opened on a phone or other mobile device. Scan the QR code to open the same page on your phone.",
+      "qrLabel": "QR code for this polling station page"
+    }
+  },
   "mocks": {
     "hostId": "00000000-0000-4000-8000-000000000001",
     "hostUsername": "demo-host",

@@ -1982,3 +1982,46 @@ button {
     align-items: flex-start;
   }
 }
+
+.voter-page,
+.mobile-required {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: var(--color-platinum);
+  color: var(--color-carbon);
+}
+
+.voter-page__card,
+.mobile-required__card {
+  width: min(100%, 40rem);
+  display: grid;
+  gap: 1rem;
+  border: 1px solid var(--color-alabaster);
+  border-radius: var(--radius-large);
+  padding: 1.5rem;
+  background: var(--color-surface-level-1);
+}
+
+.voter-page__card h1,
+.mobile-required__card h1 {
+  margin: 0;
+}
+
+.voter-privacy-notice {
+  border-left: 3px solid var(--color-pacific);
+  padding: 0.75rem 1rem;
+  background: var(--color-surface-level-2);
+}
+
+.voter-page__signal-status {
+  margin: 0;
+  color: color-mix(in srgb, var(--color-carbon) 75%, var(--color-platinum));
+}
+
+.mobile-required__qr {
+  display: grid;
+  place-items: center;
+  min-height: 192px;
+}

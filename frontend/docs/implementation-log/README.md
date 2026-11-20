@@ -12,3 +12,4 @@ Frontend implementation entries are recorded here using the format
 - [F6 — Station detail and lifecycle](./F6-station-detail.md)
 - [F7 — Host approval queue](./F7-approval-queue.md)
 - [F8 — Live analytics](./F8-analytics.md)
+- [F9 — Device signals and mobile gate](./F9-device-signals-and-mobile-gate.md)
