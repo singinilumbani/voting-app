@@ -8,7 +8,11 @@ describe("pnpm install guard", () => {
   it("allows pnpm", () => {
     const result = spawnSync(process.execPath, [guardScript], {
       encoding: "utf8",
-      env: { ...process.env, npm_config_user_agent: "pnpm/12.4.1" },
+      env: {
+        ...process.env,
+        npm_config_user_agent: "pnpm/12.4.1",
+        NPM_CONFIG_USER_AGENT: "pnpm/12.4.1",
+      },
     });
 
     expect(result.status).toBe(0);
@@ -18,7 +22,11 @@ describe("pnpm install guard", () => {
   it("rejects other package managers", () => {
     const result = spawnSync(process.execPath, [guardScript], {
       encoding: "utf8",
-      env: { ...process.env, npm_config_user_agent: "npm/11.0.0" },
+      env: {
+        ...process.env,
+        npm_config_user_agent: "npm/11.0.0",
+        NPM_CONFIG_USER_AGENT: "npm/11.0.0",
+      },
     });
 
     expect(result.status).toBe(1);

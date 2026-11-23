@@ -1,6 +1,6 @@
 # F7 — Host approval queue
 
-Date: 2026-11-20
+Date: 2026-11-23
 
 ## Goal
 
@@ -29,6 +29,9 @@ operations, and CSV export.
 - Adjusted the shared Tabs JSX branch structure in
   `src/components/ui/primitives.tsx` to avoid a false-positive hard-coded-text
   warning from the i18n checker; behavior is unchanged.
+- Updated `scripts/require-pnpm.mjs` and
+  `src/components/require-pnpm.test.ts` so the pnpm guard remains reliable with
+  both lowercase and uppercase Windows environment variable names.
 
 ## Decisions and deviations
 
@@ -63,6 +66,8 @@ operations, and CSV export.
 - `pnpm check:tokens`
 - `pnpm check:i18n`
 - `pnpm build`
+- `pnpm exec vitest run src/components/host/ApprovalQueue.test.tsx`
+- `pnpm exec vitest run src/components/host/StationDetail.test.tsx`
 - `pnpm exec vitest run src/components/host/ApprovalQueue.test.tsx src/components/host/StationDetail.test.tsx`
 - `pnpm exec prettier --write` for the modified frontend source and docs files
 - `git status --short`
@@ -72,8 +77,10 @@ operations, and CSV export.
 
 - TypeScript check: passed.
 - ESLint: passed.
-- Focused approval queue and station detail tests: passed (40 tests).
-- Full Vitest suite: passed (21 files, 116 tests).
+- Focused approval queue tests: passed (20 tests).
+- Focused station detail tests: passed (20 tests).
+- Pnpm guard tests: passed (2 tests).
+- Full Vitest suite: passed (26 files, 145 tests).
 - Design token check: passed.
 - Translation check: passed.
 - Production build: passed.
