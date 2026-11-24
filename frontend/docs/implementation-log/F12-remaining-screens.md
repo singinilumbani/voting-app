@@ -18,6 +18,10 @@ payment gate, audit every inventory item, and verify route/navigation coverage.
 - Added `docs/screens-audit.md`.
 - Updated `docs/screens.md`.
 - Added billing, payment gate, and route smoke tests.
+- Added route-level host/public loading and error shells.
+- Added route document-title metadata across auth, legal, offline, maintenance,
+  host, public, and component showcase routes.
+- Added an MSW-backed pending-billing status test and billing status fetch.
 
 ## Decisions and deviations
 
@@ -51,7 +55,8 @@ payment gate, audit every inventory item, and verify route/navigation coverage.
 ## Test results
 
 - Billing, payment gate, and route smoke: passed (9 tests).
-- Full Vitest suite: passed (37 files, 182 tests).
+- Focused F12 billing/navigation/smoke suite: passed (16 tests).
+- Final full Vitest suite: passed (38 files, 188 tests).
 - TypeScript check: passed.
 - ESLint: passed.
 - Token check: passed.

@@ -2,6 +2,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { axe } from "vitest-axe";
+import { http, HttpResponse } from "msw";
+import { server } from "@/mocks/server";
 import { BillingPage } from "./BillingPage";
 
 vi.mock("@/lib/session", () => ({
@@ -47,6 +49,16 @@ describe("BillingPage", () => {
     const { container } = renderBilling();
     const results = await axe(container);
     expect(results.violations).toHaveLength(0);
+  });
+  it("loads pending payment state through MSW", async () => {
+    vi.stubEnv("NEXT_PUBLIC_ENABLE_PAYMENTS", "true");
+    server.use(
+      http.get("/api/v1/host/billing/status", () =>
+        HttpResponse.json({ status: "PENDING" }),
+      ),
+    );
+    renderBilling();
+    expect(await screen.findByText("Pending")).toBeVisible();
   });
   it("shows the beta-disabled state when payments are disabled", () => {
     vi.stubEnv("NEXT_PUBLIC_ENABLE_PAYMENTS", "false");

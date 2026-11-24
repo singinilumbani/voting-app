@@ -81,3 +81,7 @@ means the screen/dialog is implemented by a shared or lifecycle module.
 | Loading states | `loading.tsx`, skeleton components, and query pending states | done |
 | Error states | Global error boundary, banners, and route/API error states | done |
 | Empty states | Dashboard and list empty components | done |
+| Provider brand logos | `BillingPage` provider text badges | done in module |
+| Route loading shell | Global `loading.tsx` plus host/public loading routes | done |
+| Route error shell | Global `error.tsx` plus host/public error routes | done |
+| Route document titles | Root template plus host, public, billing, and auth route metadata | done |

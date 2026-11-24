@@ -1,5 +1,8 @@
 import { StatusPage } from "@/components/global/StatusPage";
 import { getT } from "@/lib/i18n";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Maintenance" };
 
 export default function MaintenancePage() {
   const t = getT();

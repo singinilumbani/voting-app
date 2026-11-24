@@ -1,5 +1,8 @@
 import { StatusPage } from "@/components/global/StatusPage";
 import { getT } from "@/lib/i18n";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Offline" };
 
 export default function OfflinePage() {
   const t = getT();

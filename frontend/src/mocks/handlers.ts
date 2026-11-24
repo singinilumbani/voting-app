@@ -43,6 +43,9 @@ function addMockStationActivity(stationId: string, eventType: string): void {
 }
 
 export const handlers: RequestHandler[] = [
+  http.get("/api/v1/host/billing/status", () =>
+    HttpResponse.json({ status: "PENDING" }),
+  ),
   http.post("/api/v1/host/auth/signup", async ({ request }) => {
     const body = z
       .object({

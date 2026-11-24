@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { getPublicEnv } from "@/lib/env";
 import { useT } from "@/lib/i18n";
@@ -12,6 +13,7 @@ import {
   StatusBadge,
 } from "@/components/ui/primitives";
 import { HostShell, SessionGate } from "./HostPages";
+import { billingApi } from "@/lib/api/billing";
 
 type PaymentStatus = "PENDING" | "SUCCESSFUL" | "FAILED";
 
@@ -23,15 +25,26 @@ export function BillingPage({ initialStatus }: BillingPageProps) {
   const t = useT();
   const session = useSession();
   const [annual, setAnnual] = useState(false);
-  const [paymentStatus, setPaymentStatus] =
+  const [localPaymentStatus, setLocalPaymentStatus] =
     useState<PaymentStatus | null>(initialStatus ?? null);
   const [busy, setBusy] = useState(false);
   const paymentsEnabled =
     getPublicEnv().NEXT_PUBLIC_ENABLE_PAYMENTS === "true";
+  const billingStatusQuery = useQuery({
+    queryKey: ["host-billing-status"],
+    queryFn: billingApi.status,
+    enabled: paymentsEnabled,
+    retry: false,
+  });
+  const paymentStatus =
+    initialStatus ??
+    localPaymentStatus ??
+    billingStatusQuery.data?.status ??
+    null;
 
   function startPayment(status: PaymentStatus = "PENDING"): void {
     setBusy(true);
-    setPaymentStatus(status);
+    setLocalPaymentStatus(status);
     window.setTimeout(() => setBusy(false), 300);
   }
 

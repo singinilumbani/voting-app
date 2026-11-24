@@ -1,4 +1,6 @@
 import { ResetPasswordPage } from "@/components/auth/AuthPages";
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Reset password" };
 
 type SearchParams = Readonly<{
   token?: string | string[];

@@ -36,7 +36,10 @@
 | `/maintenance`                   | Maintenance notice        | Temporary service availability notice                                                                            |
 | `/offline`                       | Offline notice            | Connection recovery guidance                                                                                     |
 | Not found                        | 404                       | Shared missing-page state                                                                                        |
-| Forbidden                        | 403                       | Next.js forbidden boundary state                                                                                 |
+| Forbidden                        | 403                       | Next.js forbidden boundary state                                                                                     |
+
+Host and public routes include route-level loading/error shells and metadata titles;
+Provider badges use translated text while payment brands are deferred to approved backend/payment configuration.
 | Error boundary                   | 500                       | Shared retryable error state                                                                                     |
 
 Accessibility and performance evidence is documented in

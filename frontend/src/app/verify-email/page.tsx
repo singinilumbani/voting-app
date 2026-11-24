@@ -1,4 +1,6 @@
 import { VerifyEmailPage } from "@/components/auth/AuthPages";
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Verify email" };
 
 type SearchParams = Readonly<{
   token?: string | string[];
