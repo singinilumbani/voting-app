@@ -29,6 +29,43 @@ pnpm build
 `pnpm test:watch` runs Vitest interactively. `pnpm format` formats application,
 tooling, and the active frontend documentation files.
 
+## End-to-end tests
+
+E2E tests use Playwright against a frontend and backend that you start yourself.
+They never start or reset the backend and never run as part of `pnpm test`.
+
+```sh
+pnpm install
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+Configure alternate locations through environment variables:
+
+```dotenv
+PLAYWRIGHT_APP_URL=http://localhost:3000
+PLAYWRIGHT_API_BASE=http://localhost:8787
+```
+
+By default the Playwright config starts the frontend only when
+`PLAYWRIGHT_APP_URL` is unset or points to `http://localhost:3000`. It never
+starts or resets the backend.
+
+The test projects use a Pixel 7 mobile viewport and Desktop Chrome. Test data
+uses unique usernames, station names and phone numbers. Playwright creates data
+but deliberately does not delete it.
+
+If `/api/v1/health` is not reachable at `PLAYWRIGHT_API_BASE`, all E2E specs
+skip with a clear backend-not-reachable message. Common failures:
+
+- Frontend or API origin is wrong.
+- Credentialed CORS is missing `PLAYWRIGHT_APP_URL`.
+- The backend requires email verification or Cloudinary configuration.
+- A Closed Vote registration window is still open; no documented close/advance
+  endpoint is available in the API reference.
+- Playwright Chromium is not installed. Run
+  `pnpm exec playwright install chromium`.
+
 ## Environment
 
 Create `.env.local` in the frontend root for local-only values. Do not commit

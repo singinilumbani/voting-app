@@ -9,3 +9,5 @@ next-env.d.ts
 .DS_Store
 *.pem
 .pnpm-debug.log*
+/test-results
+/playwright-report

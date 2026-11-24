@@ -44,3 +44,6 @@ Provider badges use translated text while payment brands are deferred to approve
 
 Accessibility and performance evidence is documented in
 `docs/accessibility.md` and `docs/performance.md`.
+
+End-to-end route and journey coverage is defined in `e2e/`; it is not part of
+the unit-test command.
