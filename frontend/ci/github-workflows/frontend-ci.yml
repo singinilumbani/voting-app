@@ -1,0 +1,62 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    paths:
+      - "frontend/**"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.4.1
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Token check
+        run: pnpm check:tokens
+
+      - name: i18n check
+        run: pnpm check:i18n
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_ENV: staging
+          NEXT_PUBLIC_APP_URL: https://beta.example.test
+          NEXT_PUBLIC_API_MODE: proxy
+          API_PROXY_TARGET: https://beta-worker.example.test
+          NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: demo
+          NEXT_PUBLIC_ENABLE_PAYMENTS: "false"
+          NEXT_PUBLIC_ENABLE_MOCKS: "false"
+        run: pnpm build

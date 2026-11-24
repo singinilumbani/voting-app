@@ -42,8 +42,13 @@ Host and public routes include route-level loading/error shells and metadata tit
 Provider badges use translated text while payment brands are deferred to approved backend/payment configuration.
 | Error boundary                   | 500                       | Shared retryable error state                                                                                     |
 
+Frontend CI and beta deployment setup are templates and documents under
+`ci/github-workflows/` and `docs/`.
+
 Accessibility and performance evidence is documented in
 `docs/accessibility.md` and `docs/performance.md`.
 
 End-to-end route and journey coverage is defined in `e2e/`; it is not part of
 the unit-test command.
+
+The frontend uptime route is `/api/health`.
