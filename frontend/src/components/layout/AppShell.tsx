@@ -18,6 +18,8 @@ export type AppShellProps = Readonly<{
   floatingActionLabel?: string;
   onFloatingAction?: () => void;
   hideFloatingAction?: boolean;
+  billingHref?: string;
+  billingLabel?: string;
 }>;
 
 export function AppShell({
@@ -32,6 +34,8 @@ export function AppShell({
   floatingActionLabel,
   onFloatingAction,
   hideFloatingAction = false,
+  billingHref,
+  billingLabel,
 }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -43,6 +47,8 @@ export function AppShell({
         profileLabel={profileLabel}
         logoutLabel={logoutLabel}
         onLogout={onLogout}
+        billingHref={billingHref}
+        billingLabel={billingLabel}
       />
       <MobileMenuButton
         open={menuOpen}
@@ -58,6 +64,8 @@ export function AppShell({
         profileLabel={profileLabel}
         logoutLabel={logoutLabel}
         onLogout={onLogout}
+        billingHref={billingHref}
+        billingLabel={billingLabel}
       />
       <main className="app-shell__content">{children}</main>
       {floatingActionLabel && onFloatingAction && (

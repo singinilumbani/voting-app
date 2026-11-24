@@ -16,7 +16,10 @@ const commissioner = Commissioner({
 });
 
 export const metadata: Metadata = {
-  title: messages.metadata.title,
+  title: {
+    default: messages.metadata.title,
+    template: `%s | ${messages.metadata.title}`,
+  },
   description: messages.metadata.description,
 };
 

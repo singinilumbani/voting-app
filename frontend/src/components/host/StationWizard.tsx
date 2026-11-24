@@ -33,6 +33,7 @@ import {
 } from "@/lib/host/station-validation";
 import { stationsApi } from "@/lib/api/stations";
 import type { StationDto } from "@/lib/api/schemas";
+import { PaymentGateDialog } from "./PaymentGateDialog";
 import { STATION_LIMITS } from "@/lib/shared/station-constants";
 import { CandidateEditorDialog } from "./CandidateEditorDialog";
 
@@ -130,6 +131,7 @@ export function StationWizard({
   );
   const [candidateUploading, setCandidateUploading] = useState(false);
   const [launchOpen, setLaunchOpen] = useState(false);
+  const [paymentGateOpen, setPaymentGateOpen] = useState(false);
   const [launchResult, setLaunchResult] = useState<{
     shareLink: string;
     warningKey?: string;
@@ -605,6 +607,16 @@ export function StationWizard({
       setLaunchOpen(false);
       setDirty(false);
     } catch (failure) {
+      if (
+        failure instanceof ApiError &&
+        (failure.key === "errors.payment.required" ||
+          failure.status === 402)
+      ) {
+        setPaymentGateOpen(true);
+        setLaunchOpen(false);
+        setBusy(false);
+        return;
+      }
       setError(
         failure instanceof ApiError
           ? failure.key
@@ -1335,6 +1347,10 @@ export function StationWizard({
         description={t("station.launchConfirmDescription")}
         cancelLabel={t("common.cancel")}
         confirmLabel={t("station.launch")}
+      />
+      <PaymentGateDialog
+        open={paymentGateOpen}
+        onClose={() => setPaymentGateOpen(false)}
       />
       <CandidateEditorDialog
         open={candidateModalOpen && draft.pendingCandidate !== null}

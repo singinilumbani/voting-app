@@ -24,6 +24,7 @@
 | `/host/stations/[id]/settings`   | Station settings          | Registration extension, voter cap, locked options, and cancellation                                              |
 | `/host/stations/[id]/edit`       | Edit station wizard       | Resume an existing DRAFT station setup                                                                           |
 | `/host/profile`                  | Host profile              | Profile, password, tier, export, and account deletion actions                                                    |
+| `/host/billing`                  | Host billing              | Beta-disabled notice or current plan, Pay-per-use, Premium monthly/annual, payment states, providers, and receipts |
 | `/s/[publicId]`                  | Public station            | Cached public station config and mobile-only gate                                                                |
 | `/s/[publicId]/register`         | Closed Vote registration  | Mode/status routing, normalized phone form, device privacy notice, registration receipt, stored token, and status link |
 | `/s/[publicId]/status`           | Closed Vote registration status | Pending, approved, rejected, revoked states; 30-second visible-tab polling; stored token reminder and check action |
@@ -31,7 +32,6 @@
 | `/s/[publicId]/ballot`           | Public ballot             | Shared two-column candidate cards, abstain, draft, review, submit, and offline notice |
 | `/s/[publicId]/success`          | Voting confirmation       | Submission confirmation, voting end time, immediate redirect or concealed waiting state |
 | `/s/[publicId]/results`          | Public live/final results | Read-only leaderboards, tie badges, waiting/final states, and Public Poll verification label |
-| `/s/[publicId]/ballot`           | Public Poll ballot        | Device UUID, lazy fingerprint, hashed duplicate notice                                                           |
 | `/dev/components`                | Component Sheet           | Development-only component and state showcase                                                                    |
 | `/maintenance`                   | Maintenance notice        | Temporary service availability notice                                                                            |
 | `/offline`                       | Offline notice            | Connection recovery guidance                                                                                     |

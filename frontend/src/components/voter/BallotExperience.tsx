@@ -31,6 +31,11 @@ type BallotCategory = Readonly<{
   }>[];
 }>;
 
+function hasExpiredSession(expiresAt: string | undefined): boolean {
+  if (!expiresAt) return false;
+  return Date.parse(expiresAt) <= Date.now();
+}
+
 export function CandidateCard({
   candidate,
   categoryTitle,
@@ -149,7 +154,7 @@ export function BallotExperience({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [sessionExpired, setSessionExpired] = useState(
-    () => Boolean(expiresAt && Date.parse(expiresAt) <= Date.now()),
+    () => hasExpiredSession(expiresAt),
   );
   const [isOnline, setIsOnline] = useState(true);
 

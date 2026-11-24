@@ -48,6 +48,8 @@ export function HostShell({ children }: Readonly<{ children: ReactNode }>) {
       logoutLabel={t("navigation.logout")}
       menuLabel={t("navigation.openMenu")}
       closeMenuLabel={t("navigation.closeMenu")}
+      billingHref="/host/billing"
+      billingLabel={t("navigation.billing")}
       onLogout={() => void handleLogout()}
     >
       {logoutError && (

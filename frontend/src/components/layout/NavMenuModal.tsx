@@ -10,6 +10,8 @@ export type NavMenuModalProps = Readonly<{
   logoutLabel: string;
   onLogout: () => void;
   title: string;
+  billingHref?: string;
+  billingLabel?: string;
 }>;
 
 export function NavMenuModal({
@@ -20,6 +22,8 @@ export function NavMenuModal({
   logoutLabel,
   onLogout,
   title,
+  billingHref,
+  billingLabel,
 }: NavMenuModalProps) {
   return (
     <M3ModalDialog
@@ -30,6 +34,11 @@ export function NavMenuModal({
       className="ui-dialog--nav-menu"
     >
       <nav className="app-mobile-nav" aria-label={title}>
+        {billingHref && billingLabel && (
+          <Link href={billingHref} onClick={onClose}>
+            {billingLabel}
+          </Link>
+        )}
         <Link href={profileHref} onClick={onClose}>
           {profileLabel}
         </Link>

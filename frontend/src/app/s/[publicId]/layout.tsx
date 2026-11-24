@@ -1,4 +1,10 @@
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
+import { getT } from "@/lib/i18n";
+
+export const metadata: Metadata = {
+  title: getT()("voter.station.title"),
+};
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { publicStationConfigApi } from "@/lib/api/public-station-config";

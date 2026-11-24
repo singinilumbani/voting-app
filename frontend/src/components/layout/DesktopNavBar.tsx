@@ -7,6 +7,8 @@ export type DesktopNavBarProps = Readonly<{
   logoutLabel: string;
   profileHref: string;
   onLogout: () => void;
+  billingHref?: string;
+  billingLabel?: string;
 }>;
 
 export function DesktopNavBar({
@@ -15,6 +17,8 @@ export function DesktopNavBar({
   logoutLabel,
   profileHref,
   onLogout,
+  billingHref,
+  billingLabel,
 }: DesktopNavBarProps) {
   return (
     <nav className="app-desktop-nav" aria-label={branding}>
@@ -22,6 +26,9 @@ export function DesktopNavBar({
         {branding}
       </Link>
       <div className="app-desktop-nav__actions">
+        {billingHref && billingLabel && (
+          <Link href={billingHref}>{billingLabel}</Link>
+        )}
         <Link href={profileHref}>{profileLabel}</Link>
         <M3Button variant="text" onClick={onLogout}>
           {logoutLabel}
