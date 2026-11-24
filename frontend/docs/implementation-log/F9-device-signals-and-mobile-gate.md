@@ -1,6 +1,6 @@
 # F9 — Device signals and mobile gate
 
-Date: 2026-11-20
+Date: 2026-11-24
 
 ## Goal
 
@@ -55,6 +55,7 @@ privacy notices, and a server/client mobile-only gate under `/s/[publicId]`.
 - `pnpm check:tokens`
 - `pnpm check:i18n`
 - `pnpm build`
+- `pnpm exec vitest run src/lib/voter/mobile-gate.test.ts src/components/voter/MobileOnlyGate.test.tsx src/lib/voter/device-id.test.ts src/lib/voter/use-fingerprint.test.ts`
 - `git status --short`
 - `git diff --check`
 
@@ -62,7 +63,7 @@ privacy notices, and a server/client mobile-only gate under `/s/[publicId]`.
 
 - TypeScript check: passed.
 - ESLint: passed.
-- Focused F9 tests: 15 tests passed.
+- Focused F9 device and mobile-gate tests: passed (15 tests).
 - Full Vitest suite: passed (26 files, 145 tests).
 - Token check: passed.
 - i18n check: passed with 527 keys.
