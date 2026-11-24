@@ -795,21 +795,85 @@ export const handlers: RequestHandler[] = [
     }),
   ),
   http.get("/api/v1/public/stations/:publicId", ({ params }) =>
-    HttpResponse.json({
-      station: {
-        publicId: String(params.publicId),
-        name: messages.mocks.stationName,
-        mode: "PUBLIC_POLL",
-        status: "VOTE_OPEN",
-        regStartsAt: null,
-        regEndsAt: null,
-        voteStartsAt: messages.mocks.timestamp,
-        voteEndsAt: messages.mocks.nextDayTimestamp,
-        mobileOnly: false,
-        allowAbstain: false,
-        resultsVisibility: "IMMEDIATE",
-        categories: [],
-      },
-    }),
+    {
+      const station = mockStations.find(
+        (item) => item.publicId === String(params.publicId),
+      );
+      if (station) {
+        return HttpResponse.json({
+          station: {
+            publicId: station.publicId,
+            name: station.name,
+            mode: station.mode,
+            status: station.status,
+            regStartsAt: station.regStartsAt ?? null,
+            regEndsAt: station.regEndsAt ?? null,
+            voteStartsAt: station.voteStartsAt ?? null,
+            voteEndsAt: station.voteEndsAt ?? null,
+            mobileOnly: station.mobileOnly,
+            allowAbstain: station.allowAbstain,
+            resultsVisibility: station.resultsVisibility,
+            categories: station.categories ?? [],
+          },
+        });
+      }
+      return HttpResponse.json({
+        station: {
+          publicId: String(params.publicId),
+          name: messages.mocks.stationName,
+          mode: "PUBLIC_POLL",
+          status: "VOTE_OPEN",
+          regStartsAt: null,
+          regEndsAt: null,
+          voteStartsAt: messages.mocks.timestamp,
+          voteEndsAt: messages.mocks.nextDayTimestamp,
+          mobileOnly: false,
+          allowAbstain: false,
+          resultsVisibility: "IMMEDIATE",
+          categories: [],
+        },
+      });
+    },
+  ),
+  http.post(
+    "/api/v1/public/stations/:publicId/register",
+    async ({ request }) => {
+      const body = z
+        .object({
+          fullName: z.string().min(1),
+          phone: z.string().min(1),
+          deviceUuid: z.string().uuid(),
+          fingerprintHash: z.string(),
+        })
+        .safeParse(await request.json());
+      if (!body.success) {
+        return HttpResponse.json(
+          { error: { key: "errors.validation.failed" } },
+          { status: 400 },
+        );
+      }
+      return HttpResponse.json(
+        {
+          token: "TK-K7QM-2XD9-4HNP",
+          status: "PENDING",
+        },
+        { status: 201 },
+      );
+    },
+  ),
+  http.post(
+    "/api/v1/public/stations/:publicId/status",
+    async ({ request }) => {
+      const body = z
+        .object({ token: z.string().min(1) })
+        .safeParse(await request.json());
+      if (!body.success) {
+        return HttpResponse.json(
+          { error: { key: "errors.validation.failed" } },
+          { status: 400 },
+        );
+      }
+      return HttpResponse.json({ status: "PENDING" });
+    },
   ),
 ];

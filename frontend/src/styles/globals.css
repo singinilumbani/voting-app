@@ -2025,3 +2025,48 @@ button {
   place-items: center;
   min-height: 192px;
 }
+
+.voter-registration-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.voter-registration-form h1,
+.voter-registration-form p {
+  margin: 0;
+}
+
+.voter-registration-form .ui-button {
+  width: 100%;
+}
+
+.voter-token {
+  display: grid;
+  gap: 0.75rem;
+  border: 1px solid var(--color-alabaster);
+  border-radius: var(--radius-large);
+  padding: 1rem;
+  background: var(--color-surface-level-2);
+}
+
+.voter-token__value {
+  display: block;
+  font-family: var(--font-commissioner), var(--font-sans);
+  font-size: clamp(1.35rem, 7vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.voter-token__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.voter-token__warning {
+  margin: 0;
+  color: color-mix(in srgb, var(--color-carbon) 75%, var(--color-platinum));
+  font-size: var(--text-label);
+}

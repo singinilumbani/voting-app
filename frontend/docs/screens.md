@@ -25,7 +25,8 @@
 | `/host/stations/[id]/edit`       | Edit station wizard       | Resume an existing DRAFT station setup                                                                           |
 | `/host/profile`                  | Host profile              | Profile, password, tier, export, and account deletion actions                                                    |
 | `/s/[publicId]`                  | Public station            | Cached public station config and mobile-only gate                                                                |
-| `/s/[publicId]/register`         | Closed Vote registration  | Device UUID, lazy fingerprint, hashed duplicate notice                                                           |
+| `/s/[publicId]/register`         | Closed Vote registration  | Mode/status routing, normalized phone form, device privacy notice, registration receipt, stored token, and status link |
+| `/s/[publicId]/status`           | Closed Vote registration status | Pending, approved, rejected, revoked states; 30-second visible-tab polling; stored token reminder and check action |
 | `/s/[publicId]/ballot`           | Public Poll ballot        | Device UUID, lazy fingerprint, hashed duplicate notice                                                           |
 | `/dev/components`                | Component Sheet           | Development-only component and state showcase                                                                    |
 | `/maintenance`                   | Maintenance notice        | Temporary service availability notice                                                                            |

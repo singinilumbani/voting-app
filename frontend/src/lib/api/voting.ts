@@ -32,7 +32,7 @@ export const votingApi = {
         fullName: z.string().min(1),
         phone: z.string().min(1),
         deviceUuid: z.string().uuid(),
-        fingerprintHash: z.string().min(1),
+        fingerprintHash: z.string(),
       })
       .parse(input);
     return apiFetch(
