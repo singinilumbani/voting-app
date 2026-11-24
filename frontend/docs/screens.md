@@ -20,7 +20,7 @@
 | `/host/stations/[id]/overview`   | Station detail overview   | Overview tab route                                                                                               |
 | `/host/stations/[id]/candidates` | Station candidates        | Candidate controls follow DRAFT, REG_OPEN, and read-only lifecycle rules                                         |
 | `/host/stations/[id]/voters`     | Approval queue            | Closed Vote voter review, actions, integrity panel, filters, pagination, and CSV export; Public Poll explanation |
-| `/host/stations/[id]/analytics`  | Live analytics            | Turnout and ballot KPIs, countdown, candidate leaderboards, check-in audit drawer, and CSV export                |
+| `/host/stations/[id]/analytics`  | Live analytics            | Waiting/live/final states, turnout and ballot KPIs, countdown, leader/tie leaderboards, polling status, station-wide check-in activity, and CSV export |
 | `/host/stations/[id]/settings`   | Station settings          | Registration extension, voter cap, locked options, and cancellation                                              |
 | `/host/stations/[id]/edit`       | Edit station wizard       | Resume an existing DRAFT station setup                                                                           |
 | `/host/profile`                  | Host profile              | Profile, password, tier, export, and account deletion actions                                                    |

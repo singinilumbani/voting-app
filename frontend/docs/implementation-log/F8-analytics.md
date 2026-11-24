@@ -1,6 +1,6 @@
 # F8 — Live analytics
 
-Date: 2026-11-20
+Date: 2026-11-24
 
 ## Goal
 
@@ -54,6 +54,7 @@ connection state, countdown, check-in audit drawer, and CSV export.
 - `pnpm check:tokens`
 - `pnpm check:i18n`
 - `pnpm build`
+- `pnpm exec vitest run src/components/host/StationAnalytics.test.tsx`
 - `pnpm exec prettier --write` for the modified frontend source and docs files
 - `git status --short`
 - `git diff --check`
@@ -62,9 +63,10 @@ connection state, countdown, check-in audit drawer, and CSV export.
 
 - TypeScript check: passed.
 - ESLint: passed.
-- Full Vitest suite: passed (22 files, 129 tests).
+- Focused live analytics tests: passed (13 tests).
+- Full Vitest suite: passed (26 files, 145 tests).
 - Design token check: passed.
-- Translation check: passed (515 keys).
+- Translation check: passed (527 keys).
 - Production build: passed.
 - Prettier and `git diff --check`: passed.
 - The production build reported the existing Next.js middleware convention
