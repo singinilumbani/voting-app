@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { votingApi } from "@/lib/api/voting";
 import { ApiError } from "@/lib/api/client";
+import { axe } from "vitest-axe";
 import { readBallotDraft } from "@/lib/voter/ballot-storage";
 import { BallotExperience } from "./BallotExperience";
 
@@ -55,6 +56,19 @@ afterEach(() => {
 });
 
 describe("BallotExperience", () => {
+  it("has no accessibility violations", async () => {
+    const { container } = render(
+      <BallotExperience
+        publicId="station-one"
+        station={station}
+        ballot={ballot}
+        ballotSession="session"
+        expiresAt="2099-11-24T22:00:00.000Z"
+      />,
+    );
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
+  });
   it("requires exactly one choice per position and allows abstain", () => {
     render(
       <BallotExperience

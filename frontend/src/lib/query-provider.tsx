@@ -41,18 +41,17 @@ export function AppProviders({ children }: Readonly<{ children: ReactNode }>) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {mockState === "starting" ? (
-        <p role="status">{t("global.initializingMocks")}</p>
-      ) : (
-        <>
-          {mockState === "failed" && (
-            <M3Banner variant="error">
-              {t("global.mockInitializationFailed")}
-            </M3Banner>
-          )}
-          {children}
-        </>
+      {mockState === "starting" && (
+        <p role="status" aria-live="polite">
+          {t("global.initializingMocks")}
+        </p>
       )}
+      {mockState === "failed" && (
+        <M3Banner variant="error">
+          {t("global.mockInitializationFailed")}
+        </M3Banner>
+      )}
+      {children}
     </QueryClientProvider>
   );
 }

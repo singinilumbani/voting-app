@@ -39,7 +39,7 @@ export function BillingPage({ initialStatus }: BillingPageProps) {
     return (
       <SessionGate>
         <HostShell>
-          <main className="host-page">
+          <section className="host-page">
             <M3Card className="billing-page__disabled">
               <h1>{t("billing.title")}</h1>
               <M3Banner variant="info">
@@ -49,7 +49,7 @@ export function BillingPage({ initialStatus }: BillingPageProps) {
                 {t("billing.backToDashboard")}
               </Link>
             </M3Card>
-          </main>
+          </section>
         </HostShell>
       </SessionGate>
     );
@@ -65,7 +65,7 @@ export function BillingPage({ initialStatus }: BillingPageProps) {
   return (
     <SessionGate>
       <HostShell>
-        <main className="host-page billing-page">
+        <section className="host-page billing-page">
           <h1>{t("billing.title")}</h1>
           {session.status === "authenticated" && (
             <M3Card className="billing-page__current">
@@ -155,7 +155,7 @@ export function BillingPage({ initialStatus }: BillingPageProps) {
               )}
             </M3Card>
           )}
-        </main>
+        </section>
       </HostShell>
     </SessionGate>
   );

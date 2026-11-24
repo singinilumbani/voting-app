@@ -38,3 +38,6 @@
 | Not found                        | 404                       | Shared missing-page state                                                                                        |
 | Forbidden                        | 403                       | Next.js forbidden boundary state                                                                                 |
 | Error boundary                   | 500                       | Shared retryable error state                                                                                     |
+
+Accessibility and performance evidence is documented in
+`docs/accessibility.md` and `docs/performance.md`.

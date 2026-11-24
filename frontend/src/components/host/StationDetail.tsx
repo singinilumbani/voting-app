@@ -42,6 +42,7 @@ import { CandidateEditorDialog } from "./CandidateEditorDialog";
 import { ApprovalQueue } from "./ApprovalQueue";
 import { StationAnalytics } from "./StationAnalytics";
 import { HostShell, SessionGate } from "./HostPages";
+import { withCloudinaryCandidateTransform } from "@/lib/cloudinary-image";
 
 const LazyQRCode = dynamic(
   () => import("qrcode.react").then((module) => module.QRCodeSVG),
@@ -546,11 +547,10 @@ function CandidatesTab({
                 <article key={item.id} className="station-detail__candidate">
                   {image && (
                     <Image
-                      src={image}
+                      src={withCloudinaryCandidateTransform(image, 256)}
                       alt={t("station.candidateImage", { name: item.name })}
                       width={128}
                       height={128}
-                      unoptimized
                     />
                   )}
                   <h3>{item.name}</h3>

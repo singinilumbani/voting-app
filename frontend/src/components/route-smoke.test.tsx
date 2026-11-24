@@ -6,6 +6,7 @@ import NotFound from "@/app/not-found";
 import Forbidden from "@/app/forbidden";
 import Offline from "@/app/offline/page";
 import Maintenance from "@/app/maintenance/page";
+import { axe } from "vitest-axe";
 
 describe("remaining screen route smoke", () => {
   it("has app files for every route listed in docs/screens.md", () => {
@@ -69,5 +70,11 @@ describe("remaining screen route smoke", () => {
     expect(screen.getByRole("heading", { name: "You are offline" })).toBeVisible();
     rerender(<Maintenance />);
     expect(screen.getByRole("heading", { name: "Maintenance in progress" })).toBeVisible();
+  });
+
+  it("has no axe violations in shared status pages", async () => {
+    const { container } = render(<NotFound />);
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
   });
 });

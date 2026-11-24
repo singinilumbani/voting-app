@@ -1,7 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
-import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -34,6 +34,12 @@ import {
 import { stationsApi } from "@/lib/api/stations";
 import type { StationDto } from "@/lib/api/schemas";
 import { PaymentGateDialog } from "./PaymentGateDialog";
+import { withCloudinaryCandidateTransform } from "@/lib/cloudinary-image";
+
+const LazyQRCode = dynamic(
+  () => import("qrcode.react").then((module) => module.QRCodeSVG),
+  { ssr: false },
+);
 import { STATION_LIMITS } from "@/lib/shared/station-constants";
 import { CandidateEditorDialog } from "./CandidateEditorDialog";
 
@@ -761,7 +767,7 @@ export function StationWizard({
             copyErrorLabel={t("station.copyError")}
           />
           <div className="station-qr">
-            <QRCodeSVG
+            <LazyQRCode
               value={launchResult.shareLink}
               size={200}
               fgColor="currentColor"
@@ -1093,13 +1099,15 @@ export function StationWizard({
                         >
                           {candidateImage(candidate) && (
                             <Image
-                              src={candidateImage(candidate) ?? ""}
+                              src={withCloudinaryCandidateTransform(
+                                candidateImage(candidate) ?? "",
+                                256,
+                              )}
                               alt={t("station.candidateImage", {
                                 name: candidate.name,
                               })}
                               width={128}
                               height={128}
-                              unoptimized
                             />
                           )}
                           <h3>{candidate.name}</h3>

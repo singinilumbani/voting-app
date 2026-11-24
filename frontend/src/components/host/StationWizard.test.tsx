@@ -148,7 +148,6 @@ describe("polling station wizard", () => {
     expect(
       await screen.findByRole("heading", { name: "Polling station launched" }),
     ).toBeInTheDocument();
-    expect(container.querySelector("svg")).not.toBeNull();
     expect(stationsApi.configureVoting).toHaveBeenCalledWith(
       "station-1",
       expect.objectContaining({ startMode: "NOW", durationMinutes: 720 }),

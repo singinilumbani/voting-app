@@ -10,6 +10,7 @@ import { useT } from "@/lib/i18n";
 import { ApiError } from "@/lib/api/client";
 import { votingApi } from "@/lib/api/voting";
 import type { PublicStationDto } from "@/lib/api/schemas";
+import { withCloudinaryCandidateTransform } from "@/lib/cloudinary-image";
 import {
   clearBallotDraft,
   clearBallotSession,
@@ -57,7 +58,7 @@ export function CandidateCard({
       {candidate.imageUrl ? (
         <span className="voter-candidate__image">
           <Image
-            src={candidate.imageUrl}
+            src={withCloudinaryCandidateTransform(candidate.imageUrl, 512)}
             alt=""
             fill
             sizes="(max-width: 767px) 50vw, 16rem"

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { axe } from "vitest-axe";
 import { BillingPage } from "./BillingPage";
 
 vi.mock("@/lib/session", () => ({
@@ -41,6 +42,12 @@ function renderBilling(initialStatus?: "PENDING" | "SUCCESSFUL" | "FAILED") {
 }
 
 describe("BillingPage", () => {
+  it("has no accessibility violations", async () => {
+    vi.stubEnv("NEXT_PUBLIC_ENABLE_PAYMENTS", "true");
+    const { container } = renderBilling();
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
+  });
   it("shows the beta-disabled state when payments are disabled", () => {
     vi.stubEnv("NEXT_PUBLIC_ENABLE_PAYMENTS", "false");
     renderBilling();
