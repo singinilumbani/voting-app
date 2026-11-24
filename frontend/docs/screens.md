@@ -27,6 +27,10 @@
 | `/s/[publicId]`                  | Public station            | Cached public station config and mobile-only gate                                                                |
 | `/s/[publicId]/register`         | Closed Vote registration  | Mode/status routing, normalized phone form, device privacy notice, registration receipt, stored token, and status link |
 | `/s/[publicId]/status`           | Closed Vote registration status | Pending, approved, rejected, revoked states; 30-second visible-tab polling; stored token reminder and check action |
+| `/s/[publicId]/vote`             | Voter ballot entry        | Closed Vote stored/manual token entry and Public Poll direct ballot entry with mobile-first states |
+| `/s/[publicId]/ballot`           | Public ballot             | Shared two-column candidate cards, abstain, draft, review, submit, and offline notice |
+| `/s/[publicId]/success`          | Voting confirmation       | Submission confirmation, voting end time, immediate redirect or concealed waiting state |
+| `/s/[publicId]/results`          | Public live/final results | Read-only leaderboards, tie badges, waiting/final states, and Public Poll verification label |
 | `/s/[publicId]/ballot`           | Public Poll ballot        | Device UUID, lazy fingerprint, hashed duplicate notice                                                           |
 | `/dev/components`                | Component Sheet           | Development-only component and state showcase                                                                    |
 | `/maintenance`                   | Maintenance notice        | Temporary service availability notice                                                                            |

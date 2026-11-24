@@ -752,7 +752,52 @@
     },
     "countdown": "{hours}h {minutes}m {seconds}s",
     "ballot": {
-      "title": "Public Poll ballot"
+      "title": "Public Poll ballot",
+      "abstain": "Abstain",
+      "sessionExpired": "Your ballot session expired. Re-enter to continue.",
+      "reenter": "Re-enter voting",
+      "openPollWarning": "Open poll: results are not verified",
+      "offlineDraft": "You are offline. Your selections are saved on this device.",
+      "progress": "{selected} of {total} positions selected",
+      "missing": "Missing selections: {missing}",
+      "submit": "Submit Ballot",
+      "reviewTitle": "Review your choices",
+      "goBack": "Go back",
+      "confirm": "Confirm and submit",
+      "noSelection": "No selection",
+      "edit": "Edit",
+      "networkError": "The ballot could not be submitted. Check your connection and retry."
+    },
+    "vote": {
+      "entryTitle": "Enter voting",
+      "loading": "Loading your ballot.",
+      "token": "Voter token",
+      "phoneOptional": "Phone number (optional)",
+      "enter": "Enter voting",
+      "retry": "Retry",
+      "networkError": "Voting could not be entered. Check your connection and retry.",
+      "notOpenTitle": "Voting not open yet",
+      "notOpenDescription": "The voting window has not opened.",
+      "opensAt": "Voting opens at {time}",
+      "closedTitle": "Voting closed",
+      "closedDescription": "The voting window has closed.",
+      "lockedWait": "Try again in {minutes} minutes.",
+      "alreadyVoted": "This token has already been used.",
+      "viewResults": "View results"
+    },
+    "success": {
+      "title": "Vote submitted",
+      "description": "Your ballot was submitted successfully.",
+      "concealed": "Results will be available when voting ends.",
+      "votingEnds": "Voting ends at {time}"
+    },
+    "results": {
+      "title": "Results",
+      "loading": "Loading results.",
+      "loadError": "Results could not be loaded.",
+      "notPublished": "Results not yet published",
+      "openPollWarning": "Open poll: results are not verified",
+      "final": "Final results"
     },
     "devicePrivacyNotice": "A hashed device identifier is used only to detect duplicates in this election.",
     "signalsReady": "Device privacy signals are ready.",

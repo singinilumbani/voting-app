@@ -876,4 +876,44 @@ export const handlers: RequestHandler[] = [
       return HttpResponse.json({ status: "PENDING" });
     },
   ),
+  http.post(
+    "/api/v1/public/stations/:publicId/vote/enter",
+    async ({ request }) => {
+      const body = z
+        .object({ token: z.string().min(1), phone: z.string().optional() })
+        .safeParse(await request.json());
+      if (!body.success) {
+        return HttpResponse.json(
+          { error: { key: "errors.validation.failed" } },
+          { status: 400 },
+        );
+      }
+      return HttpResponse.json({
+        alreadyVoted: false,
+        ballotSession: "mock-ballot-session",
+        expiresAt: "2099-11-24T22:00:00.000Z",
+        ballot: [],
+      });
+    },
+  ),
+  http.post(
+    "/api/v1/public/stations/:publicId/vote/submit",
+    () =>
+      HttpResponse.json({
+        confirmation: "status.vote.submitted",
+        resultsAccessToken: "mock-results-access",
+      }),
+  ),
+  http.get(
+    "/api/v1/public/stations/:publicId/results",
+    () =>
+      HttpResponse.json([
+        {
+          id: "chair",
+          title: "Chairperson",
+          candidates: [],
+          results: [],
+        },
+      ]),
+  ),
 ];

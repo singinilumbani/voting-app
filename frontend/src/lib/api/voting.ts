@@ -73,7 +73,7 @@ export const votingApi = {
       ? z
           .object({
             deviceUuid: z.string().uuid(),
-            fingerprintHash: z.string().min(1),
+            fingerprintHash: z.string(),
           })
           .parse(publicPollDetails)
       : undefined;
