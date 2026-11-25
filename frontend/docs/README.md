@@ -9,3 +9,5 @@
 - [Build prompts](./build-prompts/) — implementation prompts.
 - [Test vectors](./test-vectors/) — shared validation examples.
 - [Implementation log](./implementation-log/README.md) — frontend implementation history.
+- [Ambiguities and open questions](./ambiguities.md) — consolidated unresolved
+  product, API, infrastructure and verification questions.
